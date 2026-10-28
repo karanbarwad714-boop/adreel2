@@ -1,0 +1,9 @@
+{
+  "name": "adreel-academy-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Adreel Academy: AI ad video course sales page (static site, no build step)",
+  "scripts": {
+    "start": "npx serve ."
+  }
+}
