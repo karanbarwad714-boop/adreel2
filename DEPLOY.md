@@ -33,8 +33,8 @@ Vercel project, Settings, Domains, Add. Then add the DNS records Vercel shows at
 
 ## Things to edit before sharing the link widely
 Open `index.html` and search for `const SITE=`. Everything is in that one block:
-- `price` and `originalPrice`: now 499 and 999. Keep your payment link amount the same (499).
-- `checkoutUrl`: your payment link (https://imjo.in/zXyTmy). After payment, set the success redirect inside your payment gateway to your course page.
+- `price` and `originalPrice`: now 499 and 999. Customers pay the amount shown on the page (499) to your UPI ID.
+- `upi`, `telegramUrl`, `paymentEndpoint`: your UPI ID and QR (media/upi-qr.png), the Telegram link shown on the Thank You page, and an optional form URL that receives the UTR customers submit. Payments are direct UPI, so you verify them yourself.
 - `contact`: email is set. Add `phone` or `whatsapp` if you want them shown.
 - `leadEndpoint`: the free guide form only saves data when this is filled. Paste the form URL from Formspree, Brevo, ConvertKit or similar. Until then the form shows "Preview mode" and saves nothing.
 - `ga4Id`: your Google Analytics 4 id (G-XXXXXXXXXX) to track clicks, video plays and leads.
