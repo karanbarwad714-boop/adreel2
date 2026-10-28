@@ -239,21 +239,6 @@ header nav a:hover{color:var(--fg)}
 .price-was{color:var(--fg-mute);text-decoration:line-through;font-size:1.15rem;margin-left:10px;font-weight:500}
 .price-lab{font:500 .72rem/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--fg-mute)}
 .price-buy .btn{width:100%}
-.pay{display:grid;gap:28px;grid-template-columns:minmax(0,1fr);padding:clamp(22px,3vw,34px);border-top:1px solid var(--line-soft);scroll-margin-top:90px}
-@media(min-width:820px){.pay{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:44px;align-items:start}}
-.pay-qr{display:grid;gap:12px;justify-items:center;align-content:start}
-.qrbox{margin:0;width:min(100%,340px);background:#fff;border-radius:var(--r-m);padding:6px;overflow:hidden}
-.qrbox img{display:block;width:100%;height:auto;border-radius:10px}
-.pay-qr .fine{text-align:center;max-width:34ch}
-.pay-info{display:grid;gap:16px;align-content:start}
-.pay-info h3{font-size:clamp(1.3rem,3vw,1.7rem)}
-.pay-info .btn{width:100%}
-.upi{display:grid;gap:8px;padding:14px 16px;border-radius:var(--r-m);background:var(--bg-raise);border:1px solid var(--line)}
-.upi-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-.upi code{font:500 .95rem/1.4 var(--mono);overflow-wrap:anywhere;min-width:0;flex:1 1 220px;user-select:all;-webkit-user-select:all}
-.steps{counter-reset:s;display:grid;gap:10px}
-.steps li{counter-increment:s;display:flex;gap:12px;align-items:flex-start;color:var(--fg-dim)}
-.steps li::before{content:counter(s);flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:500 .8rem/1 var(--mono);background:var(--surface-hi);color:var(--accent-text);margin-top:1px}
 .ty{display:grid;gap:18px}
 .pill{display:inline-flex;align-items:center;gap:8px;justify-self:start;padding:8px 14px;border-radius:999px;background:rgba(242,185,75,.14);border:1px solid rgba(242,185,75,.4);color:var(--ph);font-weight:600;font-size:.92rem}
 .pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
@@ -346,7 +331,7 @@ footer.foot{border-top:1px solid var(--line-soft);padding-block:48px 56px;color:
       <p class="lead">Learn a practical workflow to turn ordinary product images into professional-looking advertising videos using AI tools. Build ad creatives for your own business or learn a skill you can offer to freelance clients.</p>
       <div class="cta-row" id="heroCtas">
         <a class="btn primary lg" data-cta="hero-primary" href="#pricing">Get Instant Course Access</a>
-        <a class="btn ghost lg" data-cta="hero-demo" href="#demo"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Watch Free Demo</a>
+        <a class="btn ghost lg" data-cta="hero-demo" data-nocheckout href="#demo"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Watch Free Demo</a>
       </div>
       <p class="fine">Results depend on your product, the AI tools, your workflow and your editing quality.</p>
     </div>
@@ -505,31 +490,8 @@ footer.foot{border-top:1px solid var(--line-soft);padding-block:48px 56px;color:
           <p class="price-lab">Final price</p>
           <p><span class="price-now" id="priceNow"></span><span class="price-was" id="priceWas" hidden></span></p>
           <div class="offer" id="offerBox" hidden><span class="off-badge" id="offBadge"></span><div id="cdWrap"><p>Launch offer ends in <b class="cd" id="cd" role="timer">--:--:--</b></p><p class="fine" id="cdNote"></p></div></div>
-          <a class="btn primary lg" data-cta="pricing" href="#pay">Enroll Now</a>
-          <p class="fine">Pay by UPI QR code or UPI ID. Steps are below.</p>
-        </div>
-      </div>
-      <div class="pay" id="pay">
-        <div class="pay-qr">
-          <figure class="qrbox"><img id="qrImg" alt="" width="631" height="851"></figure>
-          <p class="fine">Scan with any UPI app: Google Pay, PhonePe, Paytm, BHIM or your bank app.</p>
-        </div>
-        <div class="pay-info">
-          <p class="price-lab">Pay by UPI</p>
-          <h3>Amount to pay: <span id="payAmt"></span></h3>
-          <div class="upi">
-            <p class="price-lab">UPI ID</p>
-            <div class="upi-row"><code id="upiId"></code><button type="button" class="btn ghost sm" id="copyUpi">Copy UPI ID</button></div>
-            <p class="fine" id="payee"></p>
-            <p class="status" id="copyStatus" role="status" aria-live="polite"></p>
-          </div>
-          <ol class="steps">
-            <li>Scan the QR code with your UPI app.</li>
-            <li>Pay the Adreel Academy course amount shown above.</li>
-            <li>After the payment is complete, click the I Have Paid button below.</li>
-          </ol>
-          <a class="btn primary lg" id="paidBtn" data-cta="i-have-paid" href="#thank-you">I Have Paid</a>
-          <p class="fine">This is a direct UPI payment, not a payment gateway. Access is confirmed only after your payment is verified.</p>
+          <a class="btn primary lg" data-cta="pricing" href="#pricing">Enroll Now</a>
+          <p class="fine">Secure checkout opens in a new tab. Already paid? <a href="#thank-you" style="color:var(--accent-text)">Send your payment details</a>.</p>
         </div>
       </div>
     </div>
@@ -621,8 +583,7 @@ const SITE={
   price:'₹499',                           // final payable price, e.g. '₹4,999'
   originalPrice:'₹999',
   offer:{price:'',endsAt:''},  // launch offer: this price until endsAt (fixed deadline, same for every visitor), then the regular price above                       // e.g. '₹9,999'. Only fill in if it is a genuine reference price
-  // PAYMENT: direct UPI (QR + UPI ID). There is no payment gateway, so payments are checked by you manually.
-  upi:{id:'BHARATPE2N0C0I8O5H85869@unitype',qr:'media/upi-qr.png',payeeName:'Devesh Kumar Verma'},
+  checkoutUrl:'https://u.payu.in/mruL5H3Wu4eW',   // PayU payment link. Every Enroll / Get Access button opens it
   paymentEndpoint:'',                     // optional: form handler URL (JSON POST) that receives the UTR a customer submits. Empty = UTR is sent by email
   leadEndpoint:'',                        // form handler URL that accepts a JSON POST (Formspree, Brevo, ConvertKit etc.)
   leadSuccess:'Thanks. You are on the list.',
@@ -672,7 +633,7 @@ const SITE={
     {q:'Is the course self-paced?',a:'[Describe how the lessons are delivered and whether students can learn at their own pace.]'},
     {q:'How long will I have access?',a:'[State the length of access, for example lifetime or a fixed number of months.]'},
     {q:'What is the refund policy?',a:'[Add a short summary of your refund policy.]',more:{label:'Read the full refund policy',href:'#refund'}},
-    {q:'What happens after payment?',a:'Pay the course amount by UPI using the QR code or UPI ID, then click I Have Paid. Send us your transaction ID (UTR) from the Thank You page. After we verify your payment, we send you the Telegram channel link with your course access instructions.'}
+    {q:'What happens after payment?',a:'Pay securely using the Enroll Now button. After we verify your payment, we send you the Telegram channel link with your course access instructions. You can also send us your transaction ID from the Thank You page.'}
   ]
 };
 
@@ -967,23 +928,17 @@ function tick(){
 renderPrice();
 if(offerLive()){tick();timer=setInterval(tick,1000)}
 function payAmount(){return offerLive()?O.price:SITE.price}
-const UPI=SITE.upi||{};
-$('#payAmt').textContent=payAmount();
-$('#upiId').textContent=UPI.id||'';
-$('#payee').textContent=UPI.payeeName?'Payee name: '+UPI.payeeName:'';
-{const q=$('#qrImg');q.src=UPI.qr||'';q.alt='UPI QR code to pay Adreel Academy'+(UPI.payeeName?', payee '+UPI.payeeName:'')+'. UPI ID '+(UPI.id||'')}
-$('#copyUpi').addEventListener('click',async()=>{
-  const cs=$('#copyStatus'),id=UPI.id||'';
-  const done=ok=>{cs.className='status '+(ok?'ok':'warn');cs.textContent=ok?'UPI ID copied.':'Copy did not work. Press and hold the UPI ID to select and copy it.'};
-  try{await navigator.clipboard.writeText(id);done(true);track('upi_copy')}
-  catch(e){
-    try{const r=document.createRange();r.selectNodeContents($('#upiId'));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);done(document.execCommand&&document.execCommand('copy'))}
-    catch(e2){done(false)}
-  }
-});
 
-/* cta tracking */
-$$('[data-cta]').forEach(a=>a.addEventListener('click',()=>track('cta_click',{label:a.dataset.cta})));
+/* checkout wiring */
+const hasCheckout=/^https?:\/\//i.test(SITE.checkoutUrl);
+$$('[data-cta]').forEach(a=>{
+  const skip=a.hasAttribute('data-nocheckout');
+  if(hasCheckout&&!skip){a.href=SITE.checkoutUrl;a.target='_blank';a.rel='noopener'}
+  a.addEventListener('click',()=>{
+    track('cta_click',{label:a.dataset.cta});
+    if(hasCheckout&&!skip)track('begin_checkout',{label:a.dataset.cta});
+  });
+});
 
 /* faq */
 $('#faqList').innerHTML=SITE.faq.map(f=>`<details><summary><span>${esc(f.q)}</span><span class="pl" aria-hidden="true"></span></summary><div class="ans"><p>${ph(f.a)}</p>${f.more?`<p><a href="${esc(f.more.href)}">${esc(f.more.label)}</a></p>`:''}</div></details>`).join('');
@@ -1047,8 +1002,8 @@ const LEGAL={
 <p class="fine">Your payment is checked manually. Course access and the Telegram link are shared only after your payment is verified.</p>
 <form class="utr" id="utrForm" novalidate>
 <h2 style="margin:0">Send your payment details</h2>
-<div class="field"><label for="utr-name">Your name</label><input type="text" id="utr-name" autocomplete="name" placeholder="Name used on your UPI app"></div>
-<div class="field"><label for="utr-id">Transaction ID / UTR number</label><input type="text" id="utr-id" inputmode="text" autocomplete="off" placeholder="12-digit UTR from your UPI app"></div>
+<div class="field"><label for="utr-name">Your name</label><input type="text" id="utr-name" autocomplete="name" placeholder="Name used for the payment"></div>
+<div class="field"><label for="utr-id">Transaction ID</label><input type="text" id="utr-id" inputmode="text" autocomplete="off" placeholder="Transaction ID from your payment receipt"></div>
 <button class="btn primary" type="submit">Send payment details</button>
 <p class="fine">Payments are checked manually. You will get the Telegram link after verification.</p>
 <p class="status" id="utrStatus" role="status" aria-live="polite"></p>
@@ -1061,10 +1016,10 @@ const LEGAL={
       e.preventDefault();
       const name=$('#utr-name',ov).value.trim(),utr=$('#utr-id',ov).value.trim();
       if(!name){say('Enter your name.','err');return}
-      if(!/^[A-Za-z0-9]{10,22}$/.test(utr)){say('Enter the transaction ID / UTR exactly as shown in your UPI app.','err');return}
+      if(!/^[A-Za-z0-9]{10,22}$/.test(utr)){say('Enter the transaction ID / UTR exactly as shown on your payment receipt.','err');return}
       if(!SITE.paymentEndpoint){
         const to=(SITE.contact&&SITE.contact.email)||'';
-        const body='Name: '+name+'\nUTR / Transaction ID: '+utr+'\nAmount: '+payAmount()+'\nCourse: Adreel Academy AI Ad Video Creation Course';
+        const body='Name: '+name+'\nTransaction ID: '+utr+'\nAmount: '+payAmount()+'\nCourse: Adreel Academy AI Ad Video Creation Course';
         say('Your email app should open with your details. If it does not, email your name and UTR to '+to+'.','warn');
         track('utr_email');
         location.href='mailto:'+to+'?subject='+encodeURIComponent('Payment details: Adreel Academy')+'&body='+encodeURIComponent(body);

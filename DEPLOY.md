@@ -33,8 +33,9 @@ Vercel project, Settings, Domains, Add. Then add the DNS records Vercel shows at
 
 ## Things to edit before sharing the link widely
 Open `index.html` and search for `const SITE=`. Everything is in that one block:
-- `price` and `originalPrice`: now 499 and 999. Customers pay the amount shown on the page (499) to your UPI ID.
-- `upi`, `paymentEndpoint`: your UPI ID and QR (media/upi-qr.png), and an optional form URL that receives the UTR customers submit (if empty, the UTR is sent to your email). Payments are direct UPI, so you verify them yourself and send the Telegram link to each paid customer. The Telegram link is deliberately not stored on the site.
+- `price` and `originalPrice`: now 499 and 999. Keep your PayU link amount the same (499).
+- `checkoutUrl`: your PayU payment link (https://u.payu.in/mruL5H3Wu4eW). All Enroll and Get Access buttons open it. Set the success redirect inside PayU to your site address followed by `#thank-you`.
+- `paymentEndpoint`: optional form URL that receives the transaction ID a customer submits (if empty, it is sent to your email). Verify each payment in PayU, then send the Telegram link to the customer. The Telegram link is deliberately not stored on the site.
 - `contact`: email is set. Add `phone` or `whatsapp` if you want them shown.
 - `leadEndpoint`: the free guide form only saves data when this is filled. Paste the form URL from Formspree, Brevo, ConvertKit or similar. Until then the form shows "Preview mode" and saves nothing.
 - `ga4Id`: your Google Analytics 4 id (G-XXXXXXXXXX) to track clicks, video plays and leads.
