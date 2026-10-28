@@ -623,8 +623,7 @@ const SITE={
   offer:{price:'',endsAt:''},  // launch offer: this price until endsAt (fixed deadline, same for every visitor), then the regular price above                       // e.g. '₹9,999'. Only fill in if it is a genuine reference price
   // PAYMENT: direct UPI (QR + UPI ID). There is no payment gateway, so payments are checked by you manually.
   upi:{id:'BHARATPE2N0C0I8O5H85869@unitype',qr:'media/upi-qr.png',payeeName:'Devesh Kumar Verma'},
-  telegramUrl:'https://t.me/+KXnro-UeagI3OTQ1',   // opened from the Thank You page
-  paymentEndpoint:'',                     // optional: form handler URL (JSON POST) that receives the UTR a customer submits
+  paymentEndpoint:'',                     // optional: form handler URL (JSON POST) that receives the UTR a customer submits. Empty = UTR is sent by email
   leadEndpoint:'',                        // form handler URL that accepts a JSON POST (Formspree, Brevo, ConvertKit etc.)
   leadSuccess:'Thanks. You are on the list.',
   ga4Id:'',                               // Google Analytics 4 id, e.g. 'G-XXXXXXXXXX'
@@ -673,7 +672,7 @@ const SITE={
     {q:'Is the course self-paced?',a:'[Describe how the lessons are delivered and whether students can learn at their own pace.]'},
     {q:'How long will I have access?',a:'[State the length of access, for example lifetime or a fixed number of months.]'},
     {q:'What is the refund policy?',a:'[Add a short summary of your refund policy.]',more:{label:'Read the full refund policy',href:'#refund'}},
-    {q:'What happens after payment?',a:'Pay the course amount by UPI using the QR code or UPI ID, then click I Have Paid. You will see a Thank You page with the Telegram link. Course access is confirmed only after your payment is verified.'}
+    {q:'What happens after payment?',a:'Pay the course amount by UPI using the QR code or UPI ID, then click I Have Paid. Send us your transaction ID (UTR) from the Thank You page. After we verify your payment, we send you the Telegram channel link with your course access instructions.'}
   ]
 };
 
@@ -1042,21 +1041,20 @@ const LEGAL={
 <h2>Contact</h2><p>${ph(SITE.contact.email||'[your@email.com]')}</p>`},
   refund:{t:'Refund policy',h:`<p>${ph(SITE.refundPolicy)}</p>`},
   'thank-you':{t:'Thank You for Choosing Adreel Academy!',h:`<div class="ty">
-<p class="lead">Thank you for your interest in our AI Ad Video Creation Course. Your next step is to connect with our Telegram channel to receive course access instructions.</p>
+<p class="lead">Thank you for your interest in our AI Ad Video Creation Course. Your next step is to send us your payment details below. After your payment is verified, we will send you the Telegram channel link to receive course access instructions.</p>
 <div class="kv"><span>Course</span><b>Adreel Academy AI Ad Video Creation Course</b></div>
 <div class="kv"><span>Payment status</span><b><span class="pill" style="font:inherit">Payment verification pending</span></b></div>
-<p class="fine">Your payment is checked manually. Paid access is confirmed only after the payment is verified.</p>
-<a class="btn primary lg" id="tgBtn" href="${esc(SITE.telegramUrl)}" target="_blank" rel="noopener">Get Course Access on Telegram</a>
+<p class="fine">Your payment is checked manually. Course access and the Telegram link are shared only after your payment is verified.</p>
 <form class="utr" id="utrForm" novalidate>
-<h2 style="margin:0">Submit your payment details (optional)</h2>
+<h2 style="margin:0">Send your payment details</h2>
 <div class="field"><label for="utr-name">Your name</label><input type="text" id="utr-name" autocomplete="name" placeholder="Name used on your UPI app"></div>
 <div class="field"><label for="utr-id">Transaction ID / UTR number</label><input type="text" id="utr-id" inputmode="text" autocomplete="off" placeholder="12-digit UTR from your UPI app"></div>
-<button class="btn ghost" type="submit">Submit payment details</button>
+<button class="btn primary" type="submit">Send payment details</button>
+<p class="fine">Payments are checked manually. You will get the Telegram link after verification.</p>
 <p class="status" id="utrStatus" role="status" aria-live="polite"></p>
 </form></div>`,
   init(ov){
     track('payment_claimed');
-    $('#tgBtn',ov).addEventListener('click',()=>track('telegram_click'));
     const f=$('#utrForm',ov),st=$('#utrStatus',ov);
     const say=(m,c)=>{st.className='status '+c;st.textContent=m};
     f.addEventListener('submit',async e=>{
@@ -1064,7 +1062,14 @@ const LEGAL={
       const name=$('#utr-name',ov).value.trim(),utr=$('#utr-id',ov).value.trim();
       if(!name){say('Enter your name.','err');return}
       if(!/^[A-Za-z0-9]{10,22}$/.test(utr)){say('Enter the transaction ID / UTR exactly as shown in your UPI app.','err');return}
-      if(!SITE.paymentEndpoint){say('Not connected yet, so nothing was saved. Send your UTR to us on Telegram instead.','warn');return}
+      if(!SITE.paymentEndpoint){
+        const to=(SITE.contact&&SITE.contact.email)||'';
+        const body='Name: '+name+'\nUTR / Transaction ID: '+utr+'\nAmount: '+payAmount()+'\nCourse: Adreel Academy AI Ad Video Creation Course';
+        say('Your email app should open with your details. If it does not, email your name and UTR to '+to+'.','warn');
+        track('utr_email');
+        location.href='mailto:'+to+'?subject='+encodeURIComponent('Payment details: Adreel Academy')+'&body='+encodeURIComponent(body);
+        return;
+      }
       try{
         const r=await fetch(SITE.paymentEndpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:name,utr:utr,amount:payAmount(),source:location.href})});
         if(!r.ok)throw new Error('bad status');
