@@ -298,6 +298,31 @@ footer.foot{border-top:1px solid var(--line-soft);padding-block:48px 56px;color:
 /* legal overlay */
 .legal-view{position:fixed;inset:0;z-index:40;overflow:auto;background:var(--bg);padding-top:calc(24px + env(safe-area-inset-top,0px));padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
 .legal-view article{max-width:720px;display:grid;gap:14px}
+.legal-view article.wide{max-width:1040px}
+.course-sub{font:700 clamp(1.15rem,3vw,1.5rem)/1.25 var(--display);color:var(--accent-text)}
+.lock{display:grid;gap:14px;max-width:520px;padding:22px;border-radius:var(--r-l);background:var(--surface);border:1px solid var(--line-soft)}
+.lock .btn{justify-self:start}
+.field input.code{text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono)}
+.prog{display:grid;gap:8px;max-width:520px}
+.bar2{height:8px;border-radius:99px;background:var(--surface-hi);overflow:hidden}
+.bar2 i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+.mgrid{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:760px){.mgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.mcard{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:10px;align-content:start;padding:20px;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--line-soft);transition:border-color .2s,transform .2s;min-width:0}
+.mcard:hover{border-color:#4a43a8;transform:translateY(-2px)}
+.mcard:focus-visible{outline:2px solid var(--accent-text);outline-offset:3px}
+.mcard .lab{font:500 .72rem/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent-text)}
+.mcard b{font:700 1.05rem/1.3 var(--display);color:var(--fg)}
+.mcard small{color:var(--fg-mute);font-size:.88rem}
+.mcard .done{color:var(--ok)}
+.player{position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--r-m);overflow:hidden;background:#000;border:1px solid var(--line)}
+.player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.mnav{display:flex;flex-wrap:wrap;gap:10px}
+.mnav .btn{flex:1 1 150px}
+.cview{display:grid;gap:18px}
+.cview h2{margin:0}
+.linkbtn{all:unset;cursor:pointer;color:var(--fg-mute);text-decoration:underline;font-size:.9rem}
+.linkbtn:focus-visible{outline:2px solid var(--accent-text);outline-offset:3px}
 .legal-view h1{font-size:clamp(1.9rem,5vw,2.8rem);outline:0}
 .legal-view h2{font-size:1.3rem;margin-top:14px}
 .legal-view p,.legal-view li{color:var(--fg-dim)}
@@ -548,6 +573,7 @@ footer.foot{border-top:1px solid var(--line-soft);padding-block:48px 56px;color:
           <li><a href="#privacy">Privacy policy</a></li>
           <li><a href="#terms">Terms and conditions</a></li>
           <li><a href="#refund">Refund policy</a></li>
+          <li><a href="#course">Access your course</a></li>
         </ul>
       </div>
     </div>
@@ -633,7 +659,7 @@ const SITE={
     {q:'Is the course self-paced?',a:'[Describe how the lessons are delivered and whether students can learn at their own pace.]'},
     {q:'How long will I have access?',a:'[State the length of access, for example lifetime or a fixed number of months.]'},
     {q:'What is the refund policy?',a:'[Add a short summary of your refund policy.]',more:{label:'Read the full refund policy',href:'#refund'}},
-    {q:'What happens after payment?',a:'Pay securely using the Enroll Now button. After we verify your payment, we send you the Telegram channel link with your course access instructions. You can also send us your transaction ID from the Thank You page.'}
+    {q:'What happens after payment?',a:'Pay securely using the Enroll Now button. After we verify your payment, we send you a personal access code. Enter it on the course access page to watch your course modules. You can also send us your transaction ID from the Thank You page so we can find your payment faster.'}
   ]
 };
 
@@ -995,17 +1021,118 @@ const LEGAL={
 <h2>Refunds</h2><p>See the <a href="#refund">Refund policy</a>.</p>
 <h2>Contact</h2><p>${ph(SITE.contact.email||'[your@email.com]')}</p>`},
   refund:{t:'Refund policy',h:`<p>${ph(SITE.refundPolicy)}</p>`},
-  'thank-you':{t:'Thank You for Choosing Adreel Academy!',h:`<div class="ty">
-<p class="lead">Thank you for your interest in our AI Ad Video Creation Course. Your next step is to send us your payment details below. After your payment is verified, we will send you the Telegram channel link to receive course access instructions.</p>
+  course:{t:'Welcome to Adreel Academy',wide:true,h:'<div id="courseRoot"></div>',init(ov){
+    const root=$('#courseRoot',ov);
+    const CK='adreel_course_code',PK='adreel_course_done';
+    const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+    const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+    const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
+    const b64d=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0));
+    const hx=u=>[...u].map(n=>n.toString(16).padStart(2,'0')).join('');
+    const norm=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const getJson=u=>fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('net');return r.json()});
+    const top=()=>{ov.scrollTop=0};
+    /* Opens the encrypted course data. Only a valid access code can decrypt it. */
+    async function unlock(code){
+      const c=norm(code);
+      if(c.length<8)throw new Error('invalid');
+      const te=new TextEncoder();
+      const base=await crypto.subtle.importKey('raw',te.encode(c),'PBKDF2',false,['deriveBits']);
+      const bits=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:te.encode('adreel-academy-v1'),iterations:250000},base,384));
+      const id=hx(bits.slice(0,16));
+      const [acc,cd]=await Promise.all([getJson('data/access.json'),getJson('data/course.enc.json')]);
+      const e=acc.find(x=>x.id===id);
+      if(!e)throw new Error('invalid');
+      const wk=await crypto.subtle.importKey('raw',bits.slice(16,48),'AES-GCM',false,['decrypt']);
+      const K=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(e.iv)},wk,b64d(e.w));
+      const dk=await crypto.subtle.importKey('raw',K,'AES-GCM',false,['decrypt']);
+      const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(cd.iv)},dk,b64d(cd.ct));
+      return JSON.parse(new TextDecoder().decode(pt));
+    }
+    function showLock(msg,cls){
+      const mail=(SITE.contact&&SITE.contact.email)||'';
+      root.innerHTML=`<p class="course-sub">Your AI Ad Video Creation Course</p>
+<form class="lock" id="codeForm" novalidate>
+<p>Enter the access code we sent you after your payment was verified.</p>
+<div class="field"><label for="course-code">Access code</label><input class="code" type="text" id="course-code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ADREEL-XXXX-XXXX-XXXX"></div>
+<button class="btn primary" type="submit" id="codeBtn">Unlock my course</button>
+<p class="status ${cls||''}" id="codeStatus" role="status" aria-live="polite">${esc(msg||'')}</p>
+<p class="fine">No code yet? It is sent only after your payment is verified. Not paid yet? <a href="#pricing" style="color:var(--accent-text)">See the course offer</a>. Need help? Email ${esc(mail)}.</p>
+</form>`;
+      const f=$('#codeForm',root),st=$('#codeStatus',root),b=$('#codeBtn',root);
+      f.addEventListener('submit',async e=>{
+        e.preventDefault();
+        const v=$('#course-code',root).value;
+        if(norm(v).length<8){st.className='status err';st.textContent='Enter your access code.';return}
+        b.disabled=true;st.className='status warn';st.textContent='Checking your code…';
+        try{
+          const d=await unlock(v);lsSet(CK,v);track('course_unlock');showCourse(d);
+        }catch(err){
+          b.disabled=false;
+          st.className='status err';
+          st.textContent=err&&err.message==='invalid'?'This code is not valid. Check it and try again.':'Could not check the code. Check your connection and try again.';
+        }
+      });
+    }
+    function showCourse(data){
+      const mods=data.modules||[];
+      let done=[];try{done=JSON.parse(lsGet(PK)||'[]')}catch(e){}
+      const save=()=>lsSet(PK,JSON.stringify(done));
+      const doneCount=()=>mods.filter(m=>done.includes(m.id)).length;
+      function list(){
+        const n=doneCount(),pct=mods.length?Math.round(n/mods.length*100):0;
+        root.innerHTML=`<div class="cview"><p class="course-sub">Your AI Ad Video Creation Course</p>
+<p class="lead">Congratulations! Your course is ready. Start learning how to create premium AI advertisement videos step by step.</p>
+<div class="prog"><p class="fine"><b style="color:var(--fg)">${n} of ${mods.length}</b> modules completed. Progress is saved on this device.</p><div class="bar2" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="Course progress"><i style="width:${pct}%"></i></div></div>
+<div class="mgrid">${mods.map((m,i)=>`<button type="button" class="mcard" data-i="${i}"><span class="lab">Module ${i+1}</span><b>${esc(m.title.replace(/^Module \d+\s*[—-]\s*/,''))}</b><small class="${done.includes(m.id)?'done':''}">${done.includes(m.id)?'Completed':'Watch module'}</small></button>`).join('')}</div>
+<p><button type="button" class="linkbtn" id="signOut">Sign out of this device</button></p></div>`;
+        $$('.mcard',root).forEach(b=>b.addEventListener('click',()=>play(+b.dataset.i)));
+        $('#signOut',root).addEventListener('click',()=>{lsDel(CK);showLock('You are signed out.','ok')});
+        top();
+      }
+      function play(i){
+        const m=mods[i],isDone=done.includes(m.id);
+        const ok=/^[\w-]{11}$/.test(m.video);
+        root.innerHTML=`<div class="cview"><div><button type="button" class="btn ghost sm" id="toList">← Back to My Course</button></div>
+<p class="eyebrow">Module ${i+1} of ${mods.length}</p>
+<h2>${esc(m.title)}</h2>
+<div class="player">${ok?`<iframe src="https://www.youtube.com/embed/${m.video}" title="${esc(m.title)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>`:''}</div>
+<p class="lead" style="font-size:1rem">${esc(m.description||'')}</p>
+${ok?`<p class="fine">Video not loading? <a href="https://www.youtube.com/watch?v=${m.video}" target="_blank" rel="noopener" style="color:var(--accent-text)">Watch it on YouTube</a>.</p>`:''}
+<div class="mnav"><button type="button" class="btn ghost" id="prevM" ${i===0?'disabled':''}>← Previous Module</button><button type="button" class="btn ${isDone?'ghost':'primary'}" id="doneM">${isDone?'Completed. Undo':'Mark as complete'}</button><button type="button" class="btn ghost" id="nextM" ${i===mods.length-1?'disabled':''}>Next Module →</button></div></div>`;
+        $('#toList',root).addEventListener('click',list);
+        $('#prevM',root).addEventListener('click',()=>play(i-1));
+        $('#nextM',root).addEventListener('click',()=>play(i+1));
+        $('#doneM',root).addEventListener('click',()=>{
+          if(done.includes(m.id)){done=done.filter(x=>x!==m.id)}else{done.push(m.id)}
+          save();track('module_complete',{module:i+1});
+          if(!isDone&&i<mods.length-1)play(i+1);else play(i);
+        });
+        track('module_view',{module:i+1});top();
+      }
+      list();
+    }
+    const saved=lsGet(CK);
+    if(saved){
+      root.innerHTML='<p class="fine">Checking your access…</p>';
+      unlock(saved).then(showCourse,err=>{
+        if(err&&err.message==='invalid'){lsDel(CK);showLock('Your access code is no longer valid. Enter a valid code or contact us.','err')}
+        else showLock('Could not check your access. Check your connection and enter your code again.','warn');
+      });
+    }else showLock();
+  }},
+  'thank-you':{t:'Thank You for Purchasing Adreel Academy!',h:`<div class="ty">
+<p class="lead">Thank you for your purchase. Your payment is checked before access is given. Once it is verified, we send you a personal access code. Click Access Your Course and enter the code to start learning.</p>
 <div class="kv"><span>Course</span><b>Adreel Academy AI Ad Video Creation Course</b></div>
 <div class="kv"><span>Payment status</span><b><span class="pill" style="font:inherit">Payment verification pending</span></b></div>
-<p class="fine">Your payment is checked manually. Course access and the Telegram link are shared only after your payment is verified.</p>
+<a class="btn primary lg" id="accessBtn" href="#course">Access Your Course</a>
+<p class="fine">The course opens only with the access code we send after your payment is verified.</p>
 <form class="utr" id="utrForm" novalidate>
-<h2 style="margin:0">Send your payment details</h2>
+<h2 style="margin:0">Send your payment details to get your code</h2>
 <div class="field"><label for="utr-name">Your name</label><input type="text" id="utr-name" autocomplete="name" placeholder="Name used for the payment"></div>
 <div class="field"><label for="utr-id">Transaction ID</label><input type="text" id="utr-id" inputmode="text" autocomplete="off" placeholder="Transaction ID from your payment receipt"></div>
 <button class="btn primary" type="submit">Send payment details</button>
-<p class="fine">Payments are checked manually. You will get the Telegram link after verification.</p>
+<p class="fine">Payments are checked manually. You get your access code after verification.</p>
 <p class="status" id="utrStatus" role="status" aria-live="polite"></p>
 </form></div>`,
   init(ov){
@@ -1038,7 +1165,7 @@ function route(){
   const k=location.hash.slice(1),ov=$('#legal');
   if(LEGAL[k]){
     if(ov.hidden)savedY=window.scrollY;
-    ov.innerHTML=`<div class="wrap"><article><a class="btn ghost sm" href="#home">← Back to site</a><h1 tabindex="-1">${LEGAL[k].t}</h1>${LEGAL[k].h}</article></div>`;
+    ov.innerHTML=`<div class="wrap"><article class="${LEGAL[k].wide?'wide':''}"><a class="btn ghost sm" href="#home">← Back to site</a><h1 tabindex="-1">${LEGAL[k].t}</h1>${LEGAL[k].h}</article></div>`;
     ov.hidden=false;ov.scrollTop=0;document.documentElement.style.overflow='hidden';
     if(LEGAL[k].init)LEGAL[k].init(ov);
     const h=$('h1',ov);if(h)h.focus({preventScroll:true});
