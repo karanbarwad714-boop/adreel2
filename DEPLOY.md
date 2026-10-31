@@ -6,7 +6,9 @@ This is a static website. There is no build step and nothing to install on Verce
 - `index.html`: the whole website (HTML, CSS and JavaScript)
 - `media/`: your sample videos and images
 - `data/`: the encrypted course (video links are locked inside) and the list of valid access codes. Upload this folder.
-- `supabase/setup.sql`: the database tables (already run once in your Supabase project)
+- `admin.html`: your private admin panel, opens at /admin (needs your login)
+- `supabase/setup.sql`: the first database tables (already run once)
+- `supabase/admin-setup.sql`: extra tables and admin-only rules for the admin panel (run once, see Admin panel below)
 - `tools/`: small scripts to add or revoke access codes (need Node.js on your computer)
 - `vercel.json`: Vercel settings (caching and security headers)
 - `package.json`: project info for Vercel and Git
@@ -86,3 +88,26 @@ Limits you should know:
 - Test once on the live site: submit the free guide form with your own email, then check that the row appears in Table Editor. Delete the test row.
 - Spam: anyone can add rows. If junk appears, tell me and we will add a limit.
 - Email is still an option: customers see your email address on the Thank You page too.
+
+## Admin panel (/admin)
+Opens at `https://your-site/admin`. You sign in with an email and password. It shows payment claims (with the name, transaction ID, amount and the email or WhatsApp number the customer gave), the leads, and your access codes.
+
+One-time setup in Supabase:
+1. SQL Editor: paste and run `supabase/admin-setup.sql`. It adds the admin-only rules and a table for access codes.
+2. SQL Editor: run `load-codes.sql` from the private zip. It loads your 100 access codes into the panel. Do NOT put that file on GitHub.
+3. Authentication, Sign In / Providers (or Settings): turn OFF "Allow new users to sign up". This stops strangers from creating accounts.
+4. Authentication, Users, Add user, Create new user: email `karanbarwad169@gmail.com`, a strong password, and tick Auto Confirm User. Save the password.
+5. If you want a different admin email, change it in `admin-setup.sql` (every place it appears) and in `admin.html` (`adminEmail`), then run the SQL again.
+
+Daily use:
+1. Check the payment in PayU (status Success, amount 499).
+2. Open /admin, Payments, Pending. Find the same name and transaction ID.
+3. Click "Verify and give code", then "Yes, payment received in PayU". The panel picks the next free code, saves it against the customer and shows a ready message.
+4. Copy the message or open WhatsApp or email from the panel and send it.
+5. Wrong or fake payment: click Reject. It never gives a code.
+
+Limits:
+- The panel does not check PayU for you. You compare the payment yourself.
+- Revoking a code (refund) still needs `node tools/revoke.mjs CODE`, then upload `data/access.json`.
+- Adding more codes: run `node tools/add-codes.mjs 50`, upload `data/access.json`, and load the new codes into the panel (the tool also writes them to `private/codes.txt`; paste them as `insert into access_codes (code) values ('ADREEL-...');`).
+- The admin page address is public but the data is not. Without your login every list stays empty. Use a long password.

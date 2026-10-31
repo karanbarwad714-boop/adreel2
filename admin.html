@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Adreel Admin</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0a0a0f;--bg-raise:#10101a;--surface:#15151f;--surface-hi:#1d1d2a;
+  --line:#2b2b3d;--line-soft:#20202e;
+  --fg:#f3f3f8;--fg-dim:#b6b6ca;--fg-mute:#8c8ca6;
+  --accent:#5a4bee;--accent-2:#2c63f0;--accent-text:#b3a8ff;
+  --warn:#f2b94b;--ok:#4ade9b;--bad:#ff8494;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Instrument Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"DM Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 1rem/1.55 var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+p{margin:0}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--accent-text);outline-offset:3px}
+.wrap{max-width:1100px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 64px}
+.mono{font-family:var(--mono)}
+.fine{color:var(--fg-mute);font-size:.88rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:44px;padding:0 1.1rem;border-radius:999px;border:1px solid transparent;font:600 .95rem/1 var(--body);text-decoration:none;cursor:pointer;color:#fff;background:transparent}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+.btn.ghost{border-color:var(--line);color:var(--fg)}
+.btn.ghost:hover{background:var(--surface-hi)}
+.btn.danger{border-color:#5a2a33;color:var(--bad)}
+.btn.sm{min-height:38px;padding:0 .9rem;font-size:.88rem}
+.btn[disabled]{opacity:.55;cursor:wait}
+.field{display:grid;gap:6px}
+.field label{font-size:.88rem;font-weight:600;color:var(--fg-dim)}
+input[type=text],input[type=email],input[type=password],input[type=search]{width:100%;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg-raise);color:var(--fg);font:400 1rem var(--body)}
+textarea{width:100%;min-height:150px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg-raise);color:var(--fg);font:400 .95rem/1.5 var(--body);resize:vertical}
+.status{min-height:1.4em;font-size:.9rem}
+.status.err{color:var(--bad)}.status.ok{color:var(--ok)}.status.warn{color:var(--warn)}
+
+/* login */
+.login{max-width:420px;margin:12vh auto 0;display:grid;gap:18px;padding:28px;border-radius:24px;background:var(--surface);border:1px solid var(--line-soft)}
+.login h1{font-size:1.9rem;letter-spacing:-.02em}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--line-soft)}
+.top h1{font-size:1.5rem;letter-spacing:-.02em}
+.top .who{display:flex;gap:12px;align-items:center;flex-wrap:wrap;color:var(--fg-mute);font-size:.9rem}
+.banner{margin-top:16px;padding:12px 16px;border-radius:12px;border:1px solid;font-size:.92rem}
+.banner.err{border-color:#5a2a33;background:rgba(255,132,148,.08);color:var(--bad)}
+.banner.warn{border-color:rgba(242,185,75,.4);background:rgba(242,185,75,.08);color:var(--warn)}
+
+/* tiles */
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:20px}
+@media(min-width:760px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tile{padding:16px 18px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);display:grid;gap:4px}
+.tile span{font:500 .7rem/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--fg-mute)}
+.tile b{font:800 2rem/1 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.tile.low b{color:var(--warn)}
+
+/* tabs and filters */
+.tabs{display:flex;gap:6px;margin-top:24px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{min-height:46px;padding:0 16px;background:none;border:0;border-bottom:2px solid transparent;color:var(--fg-mute);font:600 .95rem/1 var(--body);cursor:pointer;white-space:nowrap}
+.tab[aria-selected=true]{color:var(--fg);border-bottom-color:var(--accent-text)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{min-height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--fg-dim);font:500 .88rem/1 var(--body);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--surface-hi);color:var(--fg);border-color:#4a43a8}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
+.toolbar input{flex:1 1 220px;max-width:360px}
+
+/* rows */
+.list{display:grid;gap:12px;margin-top:16px}
+.row{display:grid;gap:12px;padding:16px 18px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);grid-template-columns:minmax(0,1fr)}
+@media(min-width:860px){.row{grid-template-columns:minmax(0,1.5fr) minmax(0,1.2fr) auto auto;align-items:center}}
+.r-name{font:700 1.05rem/1.3 var(--display);overflow-wrap:anywhere}
+.r-sub{color:var(--fg-mute);font-size:.88rem;overflow-wrap:anywhere}
+.r-meta{display:grid;gap:2px;font-size:.9rem;color:var(--fg-dim);min-width:0;overflow-wrap:anywhere}
+.r-act{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:7px;justify-self:start;padding:6px 12px;border-radius:999px;font-weight:600;font-size:.82rem;border:1px solid}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.pending{color:var(--warn);border-color:rgba(242,185,75,.4);background:rgba(242,185,75,.1)}
+.pill.verified{color:var(--ok);border-color:rgba(74,222,155,.4);background:rgba(74,222,155,.1)}
+.pill.rejected{color:var(--bad);border-color:rgba(255,132,148,.4);background:rgba(255,132,148,.1)}
+.pill.free{color:var(--accent-text);border-color:#3d3790;background:rgba(90,75,238,.12)}
+.msgbox{grid-column:1/-1;display:grid;gap:10px;padding:14px;border-radius:12px;background:var(--bg-raise);border:1px solid var(--line)}
+.empty{padding:36px 16px;text-align:center;color:var(--fg-mute);border:1px dashed var(--line);border-radius:16px;margin-top:16px}
+.code{font:500 .95rem/1.3 var(--mono);letter-spacing:.04em}
+</style>
+</head>
+<body>
+<main class="wrap" id="app"></main>
+
+<script>
+(()=>{
+'use strict';
+/* =====================================================================
+   SETTINGS. The key is a public (publishable) key. Data is protected by the
+   admin login and by the Supabase row-level-security policies.
+   ===================================================================== */
+const CFG={
+  url:'https://cipaloupzopbkpoavkzn.supabase.co',
+  key:'sb_publishable_2iHh9WgSnFOcaGHVll-y1A_AuvRDCz_',
+  adminEmail:'karanbarwad169@gmail.com',
+  courseUrl:location.origin+'/#course',
+  brand:'Adreel Academy'
+};
+
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const app=$('#app');
+const SK='adreel_admin_session';
+let session=null;
+try{session=JSON.parse(sessionStorage.getItem(SK)||'null')}catch(e){}
+const S={tab:'payments',filter:'pending',claims:[],leads:[],codes:[],openMsg:null,confirmId:null,q:'',banner:null,loading:false,ok:true};
+
+/* ---------- API ---------- */
+async function authCall(grant,body){
+  const r=await fetch(CFG.url+'/auth/v1/token?grant_type='+grant,{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error_description||j.msg||j.error||'login failed');
+  return j;
+}
+function setSession(j){
+  session={access_token:j.access_token,refresh_token:j.refresh_token,email:(j.user&&j.user.email)||(session&&session.email)||''};
+  try{sessionStorage.setItem(SK,JSON.stringify(session))}catch(e){}
+}
+function clearSession(){session=null;try{sessionStorage.removeItem(SK)}catch(e){}}
+async function api(path,opt){
+  opt=opt||{};
+  const go=()=>fetch(CFG.url+'/rest/v1/'+path,{method:opt.method||'GET',headers:Object.assign({apikey:CFG.key,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},opt.prefer?{Prefer:opt.prefer}:{}),body:opt.body?JSON.stringify(opt.body):undefined});
+  let r=await go();
+  if(r.status===401&&session&&session.refresh_token){
+    try{setSession(await authCall('refresh_token',{refresh_token:session.refresh_token}));r=await go()}catch(e){clearSession();throw new Error('session')}
+  }
+  if(r.status===401)throw new Error('session');
+  if(!r.ok){const t=await r.text();throw new Error('Database said '+r.status+': '+t.slice(0,160))}
+  const t=await r.text();return t?JSON.parse(t):[];
+}
+
+/* ---------- helpers ---------- */
+const fmt=d=>d?new Date(d).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+const isEmail=s=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s||'');
+function waNumber(s){
+  const d=String(s||'').replace(/\D/g,'');
+  if(d.length===10)return '91'+d;
+  if(d.length===12&&d.startsWith('91'))return d;
+  return '';
+}
+function message(c){
+  return `Hi ${c.name}, thank you for purchasing ${CFG.brand}. Your payment is verified.\n\nYour personal access code:\n${c.access_code}\n\nHow to start:\n1. Open ${CFG.courseUrl}\n2. Enter the code above and tap Unlock my course.\n\nThis code is only for you, so please do not share it. If you need help, reply to this message.`;
+}
+async function copyText(text,btn){
+  let ok=false;
+  try{await navigator.clipboard.writeText(text);ok=true}catch(e){
+    try{const t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';document.body.append(t);t.select();ok=document.execCommand('copy');t.remove()}catch(e2){}
+  }
+  if(btn){const o=btn.textContent;btn.textContent=ok?'Copied':'Copy failed';setTimeout(()=>{btn.textContent=o},1400)}
+  return ok;
+}
+function banner(msg,kind){S.banner=msg?{msg,kind:kind||'err'}:null}
+
+/* ---------- views ---------- */
+function loginView(msg){
+  app.innerHTML=`<form class="login" id="loginForm" novalidate>
+<div><p class="fine mono" style="letter-spacing:.14em;text-transform:uppercase">${esc(CFG.brand)}</p><h1>Admin sign in</h1></div>
+<div class="field"><label for="em">Email</label><input type="email" id="em" autocomplete="username" value="${esc(CFG.adminEmail)}"></div>
+<div class="field"><label for="pw">Password</label><input type="password" id="pw" autocomplete="current-password"></div>
+<button class="btn primary" type="submit" id="loginBtn">Sign in</button>
+<p class="status err" id="loginSt" role="status" aria-live="polite">${esc(msg||'')}</p>
+<p class="fine">Only the owner account can see payments and leads.</p></form>`;
+  $('#loginForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const em=$('#em').value.trim(),pw=$('#pw').value,st=$('#loginSt'),b=$('#loginBtn');
+    if(!em||!pw){st.textContent='Enter your email and password.';return}
+    b.disabled=true;st.className='status warn';st.textContent='Signing in…';
+    try{
+      const j=await authCall('password',{email:em,password:pw});
+      setSession(j);session.email=em;
+      await load();
+    }catch(err){
+      b.disabled=false;st.className='status err';
+      st.textContent=/invalid|credentials/i.test(err.message)?'Wrong email or password.':'Could not sign in: '+err.message;
+    }
+  });
+}
+
+function stats(){
+  const c=S.claims,l=S.leads,codes=S.codes;
+  return {pending:c.filter(x=>x.status==='pending').length,verified:c.filter(x=>x.status==='verified').length,leads:l.length,free:codes.filter(x=>!x.assigned_to).length,total:codes.length};
+}
+
+function render(){
+  const st=stats();
+  const notAdmin=session&&session.email&&session.email.toLowerCase()!==CFG.adminEmail.toLowerCase();
+  app.innerHTML=`<div class="top"><h1>${esc(CFG.brand)} admin</h1><div class="who"><span>${esc(session.email||'')}</span><button class="btn ghost sm" id="refresh">Refresh</button><button class="btn ghost sm" id="out">Sign out</button></div></div>
+${notAdmin?`<div class="banner warn">You are signed in as ${esc(session.email)}, which is not the admin account (${esc(CFG.adminEmail)}). Lists will stay empty.</div>`:''}
+${S.banner?`<div class="banner ${S.banner.kind}" role="status">${esc(S.banner.msg)}</div>`:''}
+${st.total&&st.free<10?`<div class="banner warn">Only ${st.free} unused access code${st.free===1?'':'s'} left. Add more codes before you run out (see DEPLOY.md).</div>`:''}
+<div class="tiles">
+<div class="tile"><span>Pending payments</span><b>${st.pending}</b></div>
+<div class="tile"><span>Verified</span><b>${st.verified}</b></div>
+<div class="tile"><span>Leads</span><b>${st.leads}</b></div>
+<div class="tile ${st.total&&st.free<10?'low':''}"><span>Codes left</span><b>${st.free}</b></div>
+</div>
+<div class="tabs" role="tablist">${[['payments','Payments'],['leads','Leads'],['codes','Access codes']].map(t=>`<button class="tab" role="tab" data-t="${t[0]}" aria-selected="${S.tab===t[0]}">${t[1]}</button>`).join('')}</div>
+<section id="panel">${S.loading?'<p class="fine" style="margin-top:20px">Loading…</p>':S.tab==='payments'?paymentsHtml():S.tab==='leads'?leadsHtml():codesHtml()}</section>`;
+  $('#out').addEventListener('click',()=>{clearSession();S.claims=[];S.leads=[];S.codes=[];loginView('')});
+  $('#refresh').addEventListener('click',()=>load());
+  $$('.tab').forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.t;S.q='';S.openMsg=null;S.confirmId=null;render()}));
+  bindPanel();
+}
+
+function paymentsHtml(){
+  const f=S.filter,list=S.claims.filter(c=>f==='all'||c.status===f);
+  const chips=[['pending','Pending'],['verified','Verified'],['rejected','Rejected'],['all','All']].map(c=>`<button class="chip" data-f="${c[0]}" aria-pressed="${f===c[0]}">${c[1]}</button>`).join('');
+  const rows=list.map(c=>{
+    const wa=waNumber(c.contact),em=isEmail(c.contact);
+    const contact=c.contact?`<span>${esc(c.contact)}</span>`:'<span class="fine">No contact given. Find it in PayU.</span>';
+    let acts='';
+    if(c.status==='pending'){
+      acts=S.confirmId===c.id
+        ?`<button class="btn primary sm" data-a="confirm" data-id="${c.id}">Yes, payment received in PayU</button><button class="btn ghost sm" data-a="cancel">Cancel</button>`
+        :`<button class="btn primary sm" data-a="verify" data-id="${c.id}">Verify and give code</button><button class="btn danger sm" data-a="reject" data-id="${c.id}">Reject</button>`;
+    }else if(c.status==='verified'){
+      acts=`<button class="btn ghost sm" data-a="msg" data-id="${c.id}">Show message</button>`;
+    }else{
+      acts=`<button class="btn ghost sm" data-a="reopen" data-id="${c.id}">Back to pending</button>`;
+    }
+    const box=S.openMsg===c.id&&c.access_code?`<div class="msgbox"><p class="fine">Message for ${esc(c.name)}. Code: <span class="code">${esc(c.access_code)}</span></p><textarea readonly id="mt-${c.id}" aria-label="Message to send">${esc(message(c))}</textarea><div class="r-act"><button class="btn primary sm" data-a="copymsg" data-id="${c.id}">Copy message</button>${wa?`<a class="btn ghost sm" target="_blank" rel="noopener" href="https://wa.me/${wa}?text=${encodeURIComponent(message(c))}">Open WhatsApp</a>`:''}${em?`<a class="btn ghost sm" href="mailto:${esc(c.contact)}?subject=${encodeURIComponent('Your '+CFG.brand+' access code')}&body=${encodeURIComponent(message(c))}">Open email</a>`:''}</div></div>`:'';
+    return `<article class="row"><div><p class="r-name">${esc(c.name)}</p><p class="r-sub">${fmt(c.created_at)}</p></div><div class="r-meta"><span>Transaction ID <span class="mono">${esc(c.transaction_id)}</span></span><span>Amount ${esc(c.amount||'')}</span>${contact}</div><span class="pill ${esc(c.status)}">${esc(c.status[0].toUpperCase()+c.status.slice(1))}</span><div class="r-act">${acts}</div>${box}</article>`;
+  }).join('');
+  return `<div class="chips">${chips}</div>${rows?`<div class="list">${rows}</div>`:`<div class="empty">No ${f==='all'?'':f+' '}payments yet.</div>`}`;
+}
+
+function leadsHtml(){
+  const q=S.q.trim().toLowerCase();
+  const list=S.leads.filter(l=>!q||(l.first_name||'').toLowerCase().includes(q)||(l.email||'').toLowerCase().includes(q));
+  const rows=list.map(l=>`<article class="row" style="grid-template-columns:minmax(0,1fr)"><div><p class="r-name">${esc(l.first_name)}</p><p class="r-sub">${esc(l.email)} · ${fmt(l.created_at)}${l.consent?'':' · no consent recorded'}</p></div></article>`).join('');
+  return `<div class="toolbar"><input type="search" id="lq" placeholder="Search name or email" aria-label="Search leads" value="${esc(S.q)}"><button class="btn ghost sm" data-a="copyemails">Copy all emails</button><button class="btn ghost sm" data-a="csv">Download CSV</button></div>${rows?`<div class="list">${rows}</div>`:`<div class="empty">No leads ${q?'match your search':'yet'}.</div>`}`;
+}
+
+function codesHtml(){
+  const rows=S.codes.map(c=>`<article class="row" style="grid-template-columns:minmax(0,1fr) auto"><div><p class="code">${esc(c.code)}</p><p class="r-sub">${c.assigned_to?esc(c.assigned_to)+' · '+fmt(c.assigned_at):'Not given to anyone'}</p></div>${c.assigned_to?'<span class="pill verified">Given</span>':`<span class="r-act"><span class="pill free">Free</span><button class="btn ghost sm" data-a="copycode" data-code="${esc(c.code)}">Copy</button></span>`}</article>`).join('');
+  return `<p class="fine" style="margin-top:18px">Codes are given automatically when you verify a payment. Copy a free code only for a manual case, and note who got it.</p>${rows?`<div class="list">${rows}</div>`:`<div class="empty">No codes loaded. Run load-codes.sql in Supabase (see DEPLOY.md).</div>`}`;
+}
+
+/* ---------- actions ---------- */
+function bindPanel(){
+  const p=$('#panel');
+  $$('.chip',p).forEach(b=>b.addEventListener('click',()=>{S.filter=b.dataset.f;S.openMsg=null;S.confirmId=null;render()}));
+  const lq=$('#lq',p);
+  if(lq)lq.addEventListener('input',()=>{S.q=lq.value;const pos=lq.selectionStart;render();const n=$('#lq');n.focus();n.setSelectionRange(pos,pos)});
+  $$('[data-a]',p).forEach(b=>b.addEventListener('click',()=>act(b)));
+}
+async function act(b){
+  const a=b.dataset.a,id=+b.dataset.id,claim=S.claims.find(c=>c.id===id);
+  try{
+    if(a==='verify'){S.confirmId=id;render();return}
+    if(a==='cancel'){S.confirmId=null;render();return}
+    if(a==='confirm'){b.disabled=true;await verifyClaim(claim);return}
+    if(a==='reject'){await api('payment_claims?id=eq.'+id,{method:'PATCH',body:{status:'rejected'}});claim.status='rejected';banner('Marked as rejected.','warn');render();return}
+    if(a==='reopen'){await api('payment_claims?id=eq.'+id,{method:'PATCH',body:{status:'pending'}});claim.status='pending';banner(null);render();return}
+    if(a==='msg'){S.openMsg=S.openMsg===id?null:id;render();return}
+    if(a==='copymsg'){await copyText(message(claim),b);return}
+    if(a==='copycode'){await copyText(b.dataset.code,b);return}
+    if(a==='copyemails'){await copyText(S.leads.map(l=>l.email).filter(Boolean).join(', '),b);return}
+    if(a==='csv'){downloadCsv();return}
+  }catch(err){
+    if(err.message==='session'){clearSession();loginView('Your session ended. Please sign in again.');return}
+    banner(err.message);S.confirmId=null;render();
+  }
+}
+async function verifyClaim(claim){
+  let code=claim.access_code;
+  if(!code){
+    for(let tries=0;tries<3&&!code;tries++){
+      const free=await api('access_codes?select=id,code&assigned_to=is.null&order=id.asc&limit=1');
+      if(!free.length)throw new Error('No unused access codes left. Load more codes first.');
+      const got=await api('access_codes?id=eq.'+free[0].id+'&assigned_to=is.null',{method:'PATCH',prefer:'return=representation',body:{assigned_to:claim.name,claim_id:claim.id,assigned_at:new Date().toISOString()}});
+      if(got.length)code=got[0].code;
+    }
+    if(!code)throw new Error('Could not reserve a code. Try again.');
+  }
+  const when=new Date().toISOString();
+  await api('payment_claims?id=eq.'+claim.id,{method:'PATCH',body:{status:'verified',access_code:code,verified_at:when}});
+  claim.status='verified';claim.access_code=code;claim.verified_at=when;
+  S.confirmId=null;S.openMsg=claim.id;S.filter='verified';banner('Verified. Copy the message below and send it to the customer.','warn');
+  S.codes=await api('access_codes?select=*&order=id.asc').catch(()=>S.codes);
+  render();
+}
+function downloadCsv(){
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const csv=['first_name,email,consent,created_at'].concat(S.leads.map(l=>[l.first_name,l.email,l.consent,l.created_at].map(q).join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='adreel-leads.csv';document.body.append(a);a.click();a.remove();
+}
+
+async function load(){
+  S.loading=true;S.banner=null;render();
+  try{
+    const [c,l,k]=await Promise.all([
+      api('payment_claims?select=*&order=created_at.desc&limit=500'),
+      api('leads?select=*&order=created_at.desc&limit=1000'),
+      api('access_codes?select=*&order=id.asc&limit=1000')
+    ]);
+    S.claims=c;S.leads=l;S.codes=k;S.loading=false;render();
+  }catch(err){
+    S.loading=false;
+    if(err.message==='session'){clearSession();loginView('Your session ended. Please sign in again.');return}
+    banner(err.message);render();
+  }
+}
+
+if(session&&session.access_token)load();else loginView('');
+})();
+</script>
+</body>
+</html>
