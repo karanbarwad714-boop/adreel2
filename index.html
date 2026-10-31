@@ -611,7 +611,10 @@ const SITE={
   offer:{price:'',endsAt:''},  // launch offer: this price until endsAt (fixed deadline, same for every visitor), then the regular price above                       // e.g. '₹9,999'. Only fill in if it is a genuine reference price
   checkoutUrl:'https://u.payu.in/PAYUMN/GrALUHeWiDlC',   // PayU payment link. Every Enroll / Get Access button opens it
   paymentEndpoint:'',                     // optional: form handler URL (JSON POST) that receives the UTR a customer submits. Empty = UTR is sent by email
-  leadEndpoint:'',                        // form handler URL that accepts a JSON POST (Formspree, Brevo, ConvertKit etc.)
+  // DATABASE: Supabase stores the free-guide leads and the payment details customers send. The key below is a public (publishable) key.
+  // It can only ADD rows (tables are locked for reading). Never put a service_role key or database password here.
+  supabase:{url:'https://cipaloupzopbkpoavkzn.supabase.co',key:'sb_publishable_2iHh9WgSnFOcaGHVll-y1A_AuvRDCz_'},
+  leadEndpoint:'',                        // optional fallback if Supabase is empty: form handler URL that accepts a JSON POST
   leadSuccess:'Thanks. You are on the list.',
   ga4Id:'',                               // Google Analytics 4 id, e.g. 'G-XXXXXXXXXX'
   embedYouTube:false,                     // true plays YouTube inside the page (works once the page is on your own site)
@@ -697,6 +700,13 @@ function track(name,params){
     if(typeof window.gtag==='function')window.gtag('event',name,p);
     if(typeof window.fbq==='function')window.fbq('trackCustom',name,p);
   }catch(e){}
+}
+/* Supabase: insert-only calls from the browser */
+const sbReady=()=>!!(SITE.supabase&&/^https:\/\/[a-z0-9]+\.supabase\.co\/?$/.test(SITE.supabase.url||'')&&SITE.supabase.key);
+async function sbInsert(table,row){
+  const S=SITE.supabase;
+  const r=await fetch(S.url.replace(/\/$/,'')+'/rest/v1/'+table,{method:'POST',headers:{'apikey':S.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(row)});
+  if(!r.ok)throw new Error('db '+r.status);
 }
 if(SITE.ga4Id){
   try{
@@ -986,11 +996,14 @@ form.addEventListener('submit',async e=>{
   if(!name){say('Enter your first name.','err');$('#lead-name').focus();return}
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){say('Enter a valid email address.','err');$('#lead-email').focus();return}
   if(!$('#lead-consent').checked){say('Tick the consent box to receive the guide.','err');$('#lead-consent').focus();return}
-  if(!SITE.leadEndpoint){say('Preview mode: this form is not connected to an email tool yet, so nothing was saved.','warn');return}
+  if(!sbReady()&&!SITE.leadEndpoint){say('Preview mode: this form is not connected to a database or email tool yet, so nothing was saved.','warn');return}
   lbtn.disabled=true;say('Sending…','warn');
   try{
-    const r=await fetch(SITE.leadEndpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({firstName:name,email:email,consent:true,source:location.href})});
-    if(!r.ok)throw new Error('bad status');
+    if(sbReady())await sbInsert('leads',{first_name:name,email:email,consent:true});
+    else{
+      const r=await fetch(SITE.leadEndpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({firstName:name,email:email,consent:true,source:location.href})});
+      if(!r.ok)throw new Error('bad status');
+    }
     track('lead_submit');form.reset();say(SITE.leadSuccess,'ok');
   }catch(err){say('Could not send. Check your connection and try again.','err')}
   finally{lbtn.disabled=false}
@@ -1144,8 +1157,15 @@ ${ok?`<p class="fine">Video not loading? <a href="https://www.youtube.com/watch?
       const name=$('#utr-name',ov).value.trim(),utr=$('#utr-id',ov).value.trim();
       if(!name){say('Enter your name.','err');return}
       if(!/^[A-Za-z0-9]{10,22}$/.test(utr)){say('Enter the transaction ID / UTR exactly as shown on your payment receipt.','err');return}
+      const to=(SITE.contact&&SITE.contact.email)||'';
+      if(sbReady()){
+        try{
+          await sbInsert('payment_claims',{name:name,transaction_id:utr,amount:payAmount(),status:'pending'});
+          track('utr_submit');f.reset();say('Received. We will verify your payment and send your access code.','ok');
+        }catch(err){say('Could not send. Check your connection and try again, or email your name and transaction ID to '+to+'.','err')}
+        return;
+      }
       if(!SITE.paymentEndpoint){
-        const to=(SITE.contact&&SITE.contact.email)||'';
         const body='Name: '+name+'\nTransaction ID: '+utr+'\nAmount: '+payAmount()+'\nCourse: Adreel Academy AI Ad Video Creation Course';
         say('Your email app should open with your details. If it does not, email your name and UTR to '+to+'.','warn');
         track('utr_email');

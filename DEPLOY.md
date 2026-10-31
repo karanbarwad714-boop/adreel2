@@ -6,6 +6,7 @@ This is a static website. There is no build step and nothing to install on Verce
 - `index.html`: the whole website (HTML, CSS and JavaScript)
 - `media/`: your sample videos and images
 - `data/`: the encrypted course (video links are locked inside) and the list of valid access codes. Upload this folder.
+- `supabase/setup.sql`: the database tables (already run once in your Supabase project)
 - `tools/`: small scripts to add or revoke access codes (need Node.js on your computer)
 - `vercel.json`: Vercel settings (caching and security headers)
 - `package.json`: project info for Vercel and Git
@@ -37,9 +38,9 @@ Vercel project, Settings, Domains, Add. Then add the DNS records Vercel shows at
 Open `index.html` and search for `const SITE=`. Everything is in that one block:
 - `price` and `originalPrice`: now 499 and 999. Keep your PayU link amount the same (499).
 - `checkoutUrl`: your PayU payment link (https://u.payu.in/PAYUMN/GrALUHeWiDlC). All Enroll and Get Access buttons open it. Set the success redirect inside PayU to your site address followed by `#thank-you`.
-- `paymentEndpoint`: optional form URL that receives the transaction ID a customer submits (if empty, it is sent to your email). Verify each payment in PayU, then send the customer one access code.
+- `paymentEndpoint`: optional form URL that receives the transaction ID a customer submits (only used when `supabase` is empty; then the details go to your email). Verify each payment in PayU, then send the customer one access code.
 - `contact`: email is set. Add `phone` or `whatsapp` if you want them shown.
-- `leadEndpoint`: the free guide form only saves data when this is filled. Paste the form URL from Formspree, Brevo, ConvertKit or similar. Until then the form shows "Preview mode" and saves nothing.
+- `supabase`: your project URL and publishable key. The free guide form saves to the `leads` table and the Thank You page form saves to `payment_claims`. `leadEndpoint` is only a fallback if `supabase` is empty.
 - `ga4Id`: your Google Analytics 4 id (G-XXXXXXXXXX) to track clicks, video plays and leads.
 - `faq`: replace every answer in [square brackets] (tools taught, device needs, subscriptions, self-paced, access time, refund).
 - `refundPolicy`: write your real refund policy. Privacy policy and Terms are templates, have them reviewed before launch.
@@ -77,3 +78,11 @@ Limits you should know:
 - Once a customer unlocks the course, they can see the YouTube links, and unlisted videos can be opened by anyone who has the link. A customer can share the links or the code. Revoke a shared code and use one code per customer to limit this.
 - Progress ticks are saved only in the customer's own browser.
 - For fully automatic access (PayU confirms payment, the customer gets their code by email) you need a small server: PayU merchant key and salt, a PayU webhook, a database and an email service. Ask for it when sales grow.
+
+## Supabase (saved data)
+- Where to look: Supabase dashboard, Table Editor. `leads` has first_name, email, consent. `payment_claims` has name, transaction_id, amount, status (always `pending` on arrival).
+- When you verify a payment in PayU, open the matching row and change `status` to `verified` (or `rejected`). The website never reads this; it is your own record.
+- The website uses only the publishable key, and the tables allow adding rows only. Never put the `service_role` key or the database password in `index.html` or on GitHub.
+- Test once on the live site: submit the free guide form with your own email, then check that the row appears in Table Editor. Delete the test row.
+- Spam: anyone can add rows. If junk appears, tell me and we will add a limit.
+- Email is still an option: customers see your email address on the Thank You page too.
