@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1785867289297233');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1785867289297233&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<title>Secure checkout | Adreel Academy</title>
+<style>
+:root{color-scheme:dark;--bg:#0a0a0f;--surface:#15151f;--line:#2a2a3a;--fg:#f4f4f8;--mute:#9a9ab0;--accent:#5a4bee;--accent-2:#2c63f0;--bad:#ff8494}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font:400 1rem/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:grid;place-items:center;padding:24px 16px}
+main{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;display:grid;gap:14px}
+h1{margin:0;font-size:1.4rem}p{margin:0;color:var(--mute)}label{display:grid;gap:6px;font-weight:600;font-size:.9rem}
+input{min-height:52px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#10101a;color:var(--fg);font:inherit}
+button{min-height:54px;border:0;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;font:700 1rem system-ui;cursor:pointer}
+button[disabled]{opacity:.6}.err{color:var(--bad);min-height:1.4em;font-size:.9rem}a{color:#b3a8ff}.price{font-size:1.6rem;font-weight:800}
+</style>
+</head>
+<body>
+<main>
+<a href="/">&larr; Back</a>
+<h1>Adreel Academy</h1>
+<p>AI Ad Video Creation Course</p>
+<p class="price" id="price">₹499</p>
+<form id="f" novalidate>
+<label>Your name<input id="n" autocomplete="name" required></label>
+<label>Email (your access code is sent here)<input id="e" type="email" autocomplete="email" required></label>
+<label>Mobile number<input id="p" inputmode="numeric" autocomplete="tel" placeholder="10 digit number" required></label>
+<p class="err" id="err" role="alert"></p>
+<button id="b" type="submit">Pay securely with PayU</button>
+</form>
+<p style="font-size:.85rem">You will be taken to PayU's secure page. Your card, UPI or bank details never touch this site. Access is given only after PayU confirms your payment.</p>
+<form id="go" method="post" hidden></form>
+</main>
+<script>
+const $=id=>document.getElementById(id),err=$('err');
+$('f').addEventListener('submit',async e=>{
+  e.preventDefault();err.textContent='';const b=$('b');b.disabled=true;b.textContent='Please wait...';
+  try{
+    const r=await fetch('/api/payu-start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('n').value,email:$('e').value,phone:$('p').value})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok)throw new Error(d.error||'Could not start the payment. Please try again.');
+    try{if(window.fbq)fbq('track','InitiateCheckout',{value:Number(d.fields.amount),currency:'INR'},{eventID:'ic_'+d.fields.txnid})}catch(x){}
+    const go=$('go');go.action=d.action;go.innerHTML='';
+    Object.entries(d.fields).forEach(([k,v])=>{const i=document.createElement('input');i.type='hidden';i.name=k;i.value=v;go.appendChild(i)});
+    go.submit();
+  }catch(x){err.textContent=x.message;b.disabled=false;b.textContent='Pay securely with PayU'}
+});
+</script>
+</body>
+</html>

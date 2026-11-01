@@ -1,5 +1,6 @@
 // Thank You page asks: "I paid with this email / phone - what is my code?" Answers only for a payment PayU confirmed.
-const { env, needEnv, sb, parseBody, sendCodeEmail } = require('./_lib');
+const { env, needEnv, sb, parseBody, sendCodeEmail, orderToken } = require('./_lib');
+const crypto = require('crypto');
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -7,12 +8,15 @@ module.exports = async (req, res) => {
   try {
     needEnv(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']);
     const b = parseBody(req);
+    const tx = String(b.txnid || '');
+    const tk = String(b.token || '');
+    const byToken = !!tx && !!tk && tk.length === 32 && env('PAYU_SALT') && crypto.timingSafeEqual(Buffer.from(tk), Buffer.from(orderToken(tx)));
     const email = String(b.email || '').trim().toLowerCase();
     const phone = String(b.phone || '').replace(/\D/g, '').slice(-10);
     const okEmail = /^[^\s@,()*]+@[^\s@,()*]+\.[^\s@,()*]+$/.test(email);
-    if (!okEmail && phone.length < 10) return res.status(400).json({ ok: false, error: 'Enter the email or mobile number you used on the PayU page.' });
+    if (!byToken && !okEmail && phone.length < 10) return res.status(400).json({ ok: false, error: 'Enter the email or mobile number you used on the PayU page.' });
 
-    const filter = okEmail ? 'email=eq.' + encodeURIComponent(email) : 'phone=like.' + encodeURIComponent('*' + phone);
+    const filter = byToken ? 'txnid=eq.' + encodeURIComponent(tx) : okEmail ? 'email=eq.' + encodeURIComponent(email) : 'phone=like.' + encodeURIComponent('*' + phone);
     const rows = await sb('orders?' + filter + '&order=id.desc&limit=1&select=txnid,access_code,firstname,email,emailed_at,amount');
     if (!rows || !rows.length) return res.status(404).json({ ok: false, pending: true, error: 'Payment not confirmed yet. It can take a minute - try again shortly.' });
 

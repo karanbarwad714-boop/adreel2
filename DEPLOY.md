@@ -125,3 +125,18 @@ Setup (once):
 Safety: a code is given only when PayU's signed hash matches your Salt, status is success and amount >= 499 (`PRICE_MIN`). The same order never gets two codes, and two orders never get the same code. Setting `autoAccess:false` in `SITE` returns the Thank You page to manual mode.
 
 Honest limits: this was tested with a simulated PayU request and a real Postgres database, not with a real PayU payment. PayU Payment Link webhooks can differ from standard checkout; if the hash check fails in the logs, the code is NOT given (safe) and you can verify the payment by hand in the Admin panel. The Thank You lookup uses the email/mobile used for payment, so ask buyers to enter the same one. 500 codes are loaded; add more with `node tools/add-codes.mjs 400` and redeploy `data/access.json` + `load-codes.sql`.
+
+## Option: PayU checkout with server-made hash (recommended over the Payment Link)
+
+The Payment Link cannot tell the site which order a customer just paid. The built-in checkout can: the server makes the PayU hash (your Salt never reaches the browser), PayU sends the customer back to `/api/payu-return`, the server verifies PayU's hash, gives the code, and the Thank You page shows it at once.
+
+Files: `checkout.html` (name, email, mobile form), `api/payu-start.js` (price + hash), `api/payu-return.js` (verifies the return), `api/payu-webhook.js` (backup server notification), `api/claim.js` (code lookup).
+
+To switch on:
+1. Complete "Automatic access" above (SQL + env vars). Add `PRICE=499` and, for PayU TEST mode only, `PAYU_BASE_URL=https://test.payu.in/_payment` with your PayU TEST key and salt. Remove it for live.
+2. In `index.html` set `customCheckout:true` inside `SITE`, commit and push.
+3. Pay once in PayU test mode. The Thank You page should show the code immediately and Admin panel > Auto orders should list the order.
+
+Purchase event: the browser fires it only after the server returned the code; the server sends the same event with the same `event_id` (`purchase_<order>`) to the Meta Conversions API, so Meta counts it once.
+
+Never commit the Salt, the service_role key or the Meta token. They exist only in Vercel Environment Variables.

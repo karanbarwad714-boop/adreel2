@@ -97,4 +97,41 @@ async function sendMetaPurchase({ txnid, email, phone, firstname, amount }) {
   return { sent: true };
 }
 
-module.exports = { env, needEnv, sb, payuHashOk, parseBody, sendCodeEmail, sendMetaPurchase };
+// Called only AFTER PayU's hash was verified. Gives the code (idempotent per txnid), emails it, sends the server-side Meta Purchase.
+async function fulfil(p) {
+  const amount = Number(p.amount);
+  const raw = { ...p }; delete raw.hash;
+  const code = await sb('rpc/assign_order_code', {
+    method: 'POST',
+    body: JSON.stringify({
+      p_txnid: String(p.txnid), p_mihpayid: String(p.mihpayid || ''), p_email: String(p.email || '').toLowerCase(),
+      p_phone: String(p.phone || ''), p_firstname: String(p.firstname || ''), p_amount: amount, p_raw: raw,
+    }),
+  });
+  if (code && p.email) {
+    const rows = await sb('orders?txnid=eq.' + encodeURIComponent(p.txnid) + '&select=emailed_at');
+    if (rows && rows[0] && !rows[0].emailed_at) {
+      try {
+        const r = await sendCodeEmail({ to: p.email, name: p.firstname, code });
+        if (r.sent) await sb('orders?txnid=eq.' + encodeURIComponent(p.txnid), { method: 'PATCH', body: JSON.stringify({ emailed_at: new Date().toISOString(), email_error: null }) });
+      } catch (e) {
+        console.error('email failed', e.message);
+        await sb('orders?txnid=eq.' + encodeURIComponent(p.txnid), { method: 'PATCH', body: JSON.stringify({ email_error: e.message.slice(0, 300) }) });
+      }
+    }
+  }
+  try { await sendMetaPurchase({ txnid: String(p.txnid), email: p.email, phone: p.phone, firstname: p.firstname, amount }); }
+  catch (e) { console.error('meta capi failed', e.message); }
+  return code;
+}
+
+// Proof for the Thank You page that this browser really came back from a verified payment (no secret exposed).
+const orderToken = txnid => crypto.createHmac('sha256', env('PAYU_SALT')).update('order:' + txnid).digest('hex').slice(0, 32);
+
+// PayU request hash: sha512(key|txnid|amount|productinfo|firstname|email|udf1..udf5||||||salt)
+function payuRequestHash(f, key, salt) {
+  const s = [key, f.txnid, f.amount, f.productinfo, f.firstname, f.email, f.udf1 || '', f.udf2 || '', f.udf3 || '', f.udf4 || '', f.udf5 || '', '', '', '', '', '', salt].join('|');
+  return crypto.createHash('sha512').update(s).digest('hex');
+}
+
+module.exports = { env, needEnv, sb, payuHashOk, parseBody, sendCodeEmail, sendMetaPurchase, fulfil, orderToken, payuRequestHash };
