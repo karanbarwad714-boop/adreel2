@@ -116,7 +116,7 @@ const app=$('#app');
 const SK='adreel_admin_session';
 let session=null;
 try{session=JSON.parse(sessionStorage.getItem(SK)||'null')}catch(e){}
-const S={tab:'payments',filter:'pending',claims:[],leads:[],codes:[],openMsg:null,confirmId:null,q:'',banner:null,loading:false,ok:true};
+const S={tab:'payments',filter:'pending',claims:[],leads:[],codes:[],orders:[],openMsg:null,confirmId:null,q:'',banner:null,loading:false,ok:true};
 
 /* ---------- API ---------- */
 async function authCall(grant,body){
@@ -207,9 +207,9 @@ ${st.total&&st.free<10?`<div class="banner warn">Only ${st.free} unused access c
 <div class="tile"><span>Leads</span><b>${st.leads}</b></div>
 <div class="tile ${st.total&&st.free<10?'low':''}"><span>Codes left</span><b>${st.free}</b></div>
 </div>
-<div class="tabs" role="tablist">${[['payments','Payments'],['leads','Leads'],['codes','Access codes']].map(t=>`<button class="tab" role="tab" data-t="${t[0]}" aria-selected="${S.tab===t[0]}">${t[1]}</button>`).join('')}</div>
-<section id="panel">${S.loading?'<p class="fine" style="margin-top:20px">Loading…</p>':S.tab==='payments'?paymentsHtml():S.tab==='leads'?leadsHtml():codesHtml()}</section>`;
-  $('#out').addEventListener('click',()=>{clearSession();S.claims=[];S.leads=[];S.codes=[];loginView('')});
+<div class="tabs" role="tablist">${[['payments','Payments'],['leads','Leads'],['orders','Auto orders'],['codes','Access codes']].map(t=>`<button class="tab" role="tab" data-t="${t[0]}" aria-selected="${S.tab===t[0]}">${t[1]}</button>`).join('')}</div>
+<section id="panel">${S.loading?'<p class="fine" style="margin-top:20px">Loading…</p>':S.tab==='payments'?paymentsHtml():S.tab==='leads'?leadsHtml():S.tab==='orders'?ordersHtml():codesHtml()}</section>`;
+  $('#out').addEventListener('click',()=>{clearSession();S.claims=[];S.leads=[];S.codes=[];S.orders=[];loginView('')});
   $('#refresh').addEventListener('click',()=>load());
   $$('.tab').forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.t;S.q='';S.openMsg=null;S.confirmId=null;render()}));
   bindPanel();
@@ -244,6 +244,10 @@ function leadsHtml(){
   return `<div class="toolbar"><input type="search" id="lq" placeholder="Search name or email" aria-label="Search leads" value="${esc(S.q)}"><button class="btn ghost sm" data-a="copyemails">Copy all emails</button><button class="btn ghost sm" data-a="csv">Download CSV</button></div>${rows?`<div class="list">${rows}</div>`:`<div class="empty">No leads ${q?'match your search':'yet'}.</div>`}`;
 }
 
+function ordersHtml(){
+  const rows=S.orders.map(o=>`<article class="row" style="grid-template-columns:minmax(0,1fr) auto"><div><p class="r-name">${esc(o.firstname||o.email||o.txnid)} · ₹${esc(o.amount)}</p><p class="r-sub">${esc(o.email||'')} ${esc(o.phone||'')} · ${esc(o.txnid)} · ${fmt(o.created_at)}</p><p class="r-sub">${o.access_code?'Code '+esc(o.access_code)+(o.emailed_at?' · emailed':' · '+(o.email_error?'email failed: '+esc(o.email_error):'not emailed')):'<b>No code given: codes ran out. Add codes, then ask the buyer to press Get my access code again.</b>'}</p></div>${o.access_code?'<span class="pill verified">Auto</span>':'<span class="pill pending">Needs code</span>'}</article>`).join('');
+  return `<p class="fine" style="margin-top:18px">Payments PayU confirmed to the server. The buyer got their code automatically. Nothing to do here unless a row says Needs code.</p>${rows?`<div class="list">${rows}</div>`:`<div class="empty">No automatic orders yet. Run auto-access.sql and set up the webhook (see DEPLOY.md).</div>`}`;
+}
 function codesHtml(){
   const rows=S.codes.map(c=>`<article class="row" style="grid-template-columns:minmax(0,1fr) auto"><div><p class="code">${esc(c.code)}</p><p class="r-sub">${c.assigned_to?esc(c.assigned_to)+' · '+fmt(c.assigned_at):'Not given to anyone'}</p></div>${c.assigned_to?'<span class="pill verified">Given</span>':`<span class="r-act"><span class="pill free">Free</span><button class="btn ghost sm" data-a="copycode" data-code="${esc(c.code)}">Copy</button></span>`}</article>`).join('');
   return `<p class="fine" style="margin-top:18px">Codes are given automatically when you verify a payment. Copy a free code only for a manual case, and note who got it.</p>${rows?`<div class="list">${rows}</div>`:`<div class="empty">No codes loaded. Run load-codes.sql in Supabase (see DEPLOY.md).</div>`}`;
@@ -302,12 +306,13 @@ function downloadCsv(){
 async function load(){
   S.loading=true;S.banner=null;render();
   try{
-    const [c,l,k]=await Promise.all([
+    const [c,l,k,o]=await Promise.all([
       api('payment_claims?select=*&order=created_at.desc&limit=500'),
       api('leads?select=*&order=created_at.desc&limit=1000'),
-      api('access_codes?select=*&order=id.asc&limit=1000')
+      api('access_codes?select=*&order=id.asc&limit=1000'),
+      api('orders?select=*&order=id.desc&limit=500').catch(()=>[])
     ]);
-    S.claims=c;S.leads=l;S.codes=k;S.loading=false;render();
+    S.claims=c;S.leads=l;S.codes=k;S.orders=o;S.loading=false;render();
   }catch(err){
     S.loading=false;
     if(err.message==='session'){clearSession();loginView('Your session ended. Please sign in again.');return}

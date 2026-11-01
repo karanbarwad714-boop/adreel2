@@ -111,3 +111,17 @@ Limits:
 - Revoking a code (refund) still needs `node tools/revoke.mjs CODE`, then upload `data/access.json`.
 - Adding more codes: run `node tools/add-codes.mjs 50`, upload `data/access.json`, and load the new codes into the panel (the tool also writes them to `private/codes.txt`; paste them as `insert into access_codes (code) values ('ADREEL-...');`).
 - The admin page address is public but the data is not. Without your login every list stays empty. Use a long password.
+
+## Automatic access (PayU pays, code appears by itself)
+
+How it works: customer pays on the PayU Payment Link -> PayU sends a server notification (webhook) to `/api/payu-webhook` -> the server checks PayU's hash, gives the next free code from `access_codes`, saves the order, emails the code (optional) -> the customer lands on the Thank You page, enters the email/mobile they paid with, and the code appears. The old manual flow (Admin panel) stays as a fallback.
+
+Setup (once):
+1. Supabase SQL Editor: run `supabase/admin-setup.sql` (if not yet), then `private/load-codes.sql` (500 codes), then `supabase/auto-access.sql`.
+2. Vercel > Project > Settings > Environment Variables: add everything in `.env.example`. Required: `PAYU_KEY`, `PAYU_SALT`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`. Optional (email backup): `BREVO_API_KEY`, `MAIL_FROM_EMAIL`. Then Redeploy. Never put these values in GitHub or in chat; the service_role key can read and write everything.
+3. PayU dashboard > Developers > Webhooks: add a Successful Payment webhook with URL `https://adreel2.vercel.app/api/payu-webhook`. Keep the Payment Link amount at 499 and success redirect `https://adreel2.vercel.app/#thank-you`.
+4. Test with one real payment (even a small one in PayU test mode). Check PayU Webhook logs and Vercel > Logs if the code does not appear. Admin panel > Auto orders shows every confirmed order.
+
+Safety: a code is given only when PayU's signed hash matches your Salt, status is success and amount >= 499 (`PRICE_MIN`). The same order never gets two codes, and two orders never get the same code. Setting `autoAccess:false` in `SITE` returns the Thank You page to manual mode.
+
+Honest limits: this was tested with a simulated PayU request and a real Postgres database, not with a real PayU payment. PayU Payment Link webhooks can differ from standard checkout; if the hash check fails in the logs, the code is NOT given (safe) and you can verify the payment by hand in the Admin panel. The Thank You lookup uses the email/mobile used for payment, so ask buyers to enter the same one. 500 codes are loaded; add more with `node tools/add-codes.mjs 400` and redeploy `data/access.json` + `load-codes.sql`.
