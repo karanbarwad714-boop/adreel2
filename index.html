@@ -666,19 +666,19 @@ const SITE={
   // Real student testimonials only. While this list is empty, a "What you will build" section is shown instead.
   testimonials:[],                         // e.g. [{name:'Student name',role:'What they do',quote:'Their words'}]
 
-  refundPolicy:'[Write your refund policy here. State clearly whether refunds are offered, for how long, and how to request one.]',
+  refundPolicy:'Adreel Academy is a digital course, so payments are not refundable once your access code is delivered. We refund only in the cases listed on the Refund policy page.',
 
   faq:[
     {q:'Is this course suitable for beginners?',a:'Yes. The course starts with AI advertising fundamentals and builds step by step to a complete project. It is designed for beginners, video editors, freelancers and brand owners.'},
-    {q:'Do I need a powerful laptop or PC?',a:'[Add your device requirements here.]'},
-    {q:'Which AI tools will be taught?',a:'Module 2 covers the roles of image generation, image-to-video, AI editing and voice tools, and how to choose the right one for a project. [List the exact tools you teach.]'},
-    {q:'Do I need prior video editing experience?',a:'Module 5 walks through editing AI-generated footage, adding voiceovers, captions and music. [State whether prior editing experience is needed.]'},
+    {q:'Do I need a powerful laptop or PC?',a:'No. You can follow the lessons on a phone or a laptop. A laptop makes editing easier, but you do not need a powerful or expensive computer.'},
+    {q:'Which AI tools will be taught?',a:'Module 2 covers the roles of image generation, image-to-video, AI editing and voice tools, and how to choose the right one for a project. The lessons show you how to pick a tool for each step. AI tools change often, so the lessons focus on the workflow and on how to compare current options.'},
+    {q:'Do I need prior video editing experience?',a:'Module 5 walks through editing AI-generated footage, adding voiceovers, captions and music. No prior editing experience is needed. The course starts from the basics.'},
     {q:'Can I use these skills for my own business?',a:'Yes. You can use the workflow to develop product concepts and create ad assets for your own marketing. Each AI tool has its own terms for commercial use, and Module 2 covers what to check.'},
     {q:'Can I offer AI ad videos as a freelancer?',a:'Module 7 covers packaging services, proposals, outreach, delivery and pricing fundamentals. Results depend on your skills, portfolio and effort, and income is not guaranteed.'},
-    {q:'Are AI tool subscriptions included?',a:'[State whether AI tool subscriptions are included in the course price.]'},
-    {q:'Is the course self-paced?',a:'[Describe how the lessons are delivered and whether students can learn at their own pace.]'},
-    {q:'How long will I have access?',a:'[State the length of access, for example lifetime or a fixed number of months.]'},
-    {q:'What is the refund policy?',a:'[Add a short summary of your refund policy.]',more:{label:'Read the full refund policy',href:'#refund'}},
+    {q:'Are AI tool subscriptions included?',a:'No. The course price covers the lessons only. Some AI tools offer free plans and some are paid. You choose which plan to use, and the lessons show how to decide.'},
+    {q:'Is the course self-paced?',a:'Yes. The lessons are recorded videos on your course access page. You can watch them any time, repeat them, and learn at your own pace. Your progress is saved on the device you use.'},
+    {q:'How long will I have access?',a:'You get lifetime access to the course lessons, using your personal access code.'},
+    {q:'What is the refund policy?',a:'It is a digital course, so we do not refund once your access code is delivered. We do refund if you were charged twice, or if you paid and we could not give you access. Read the full policy for details.',more:{label:'Read the full refund policy',href:'#refund'}},
     {q:'What happens after payment?',a:'Pay securely using the Enroll Now button. After we verify your payment, we send you a personal access code. Enter it on the course access page to watch your course modules. You can also send us your transaction ID from the Thank You page so we can find your payment faster.'}
   ]
 };
@@ -1057,7 +1057,12 @@ const LEGAL={
 <h2>Third-party tools</h2><p>AI tools are run by other companies and have their own terms, prices and commercial-use rules. You are responsible for checking them before using work commercially. They may change over time.</p>
 <h2>Refunds</h2><p>See the <a href="#refund">Refund policy</a>.</p>
 <h2>Contact</h2><p>${ph(SITE.contact.email||'[your@email.com]')}</p>`},
-  refund:{t:'Refund policy',h:`<p>${ph(SITE.refundPolicy)}</p>`},
+  refund:{t:'Refund policy',h:`<p>Adreel Academy is a digital course. Once your personal access code is delivered, you get immediate access to the lessons, so we do not offer refunds for a change of mind, for lack of time, or because results differ from your expectations.</p>
+<h2>When we do refund</h2><ul><li>You were charged more than once for the same course.</li><li>Your payment was successful but we could not give you access to the course.</li></ul>
+<p>In the second case we first try to fix your access. If we cannot, we refund the full amount you paid.</p>
+<h2>How to request a refund</h2><p>Email ${ph(SITE.contact.email||'[your@email.com]')} with your name, the email or mobile number you used to pay, the transaction ID from your payment receipt, and a short note on what went wrong. We review each request and reply by email.</p>
+<h2>Payment issues</h2><p>If your payment failed but money was deducted, the bank normally returns it to your account automatically. If it does not, send us the transaction ID and we will help you trace it.</p>
+<h2>No guarantees</h2><p>The course teaches skills and a workflow. We do not guarantee income, clients, sales or ad performance.</p>`},
   course:{t:'Welcome to Adreel Academy',wide:true,h:'<div id="courseRoot"></div>',init(ov){
     const root=$('#courseRoot',ov);
     const CK='adreel_course_code',PK='adreel_course_done';
