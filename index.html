@@ -21,6 +21,74 @@ fbq('track', 'PageView');
 src="https://www.facebook.com/tr?id=1785867289297233&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1785867289297233');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1785867289297233&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1785867289297233');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1785867289297233&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1785867289297233');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1785867289297233&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1785867289297233');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1785867289297233&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 <title>Adreel Academy</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Learn a practical workflow to turn product images into professional-looking AI ad videos for your own brand or for freelance clients.">
@@ -627,6 +695,8 @@ const SITE={
   originalPrice:'₹999',
   offer:{price:'',endsAt:''},  // launch offer: this price until endsAt (fixed deadline, same for every visitor), then the regular price above                       // e.g. '₹9,999'. Only fill in if it is a genuine reference price
   checkoutUrl:'https://u.payu.in/PAYUMN/GrALUHeWiDlC',   // PayU payment link. Every Enroll / Get Access button opens it
+  customCheckout:false,                   // true = Enroll buttons open /checkout (PayU checkout with server-made hash, order ID passed back automatically). false = use the PayU Payment Link in checkoutUrl.
+  autoAccess:true,                        // true = Thank You page shows the access code automatically after PayU confirms payment (needs /api functions + env vars, see DEPLOY.md)
   paymentEndpoint:'',                     // optional: form handler URL (JSON POST) that receives the UTR a customer submits. Empty = UTR is sent by email
   // DATABASE: Supabase stores the free-guide leads and the payment details customers send. The key below is a public (publishable) key.
   // It can only ADD rows (tables are locked for reading). Never put a service_role key or database password here.
@@ -717,11 +787,12 @@ function track(name,params){
     if(typeof window.gtag==='function')window.gtag('event',name,p);
     if(typeof window.fbq==='function')window.fbq('trackCustom',name,p);
     if(typeof window.fbq==='function'){
-      const std={lead_submit:['Lead'],begin_checkout:['InitiateCheckout',{value:499,currency:'INR'}]}[name];
-      if(std)window.fbq('track',std[0],std[1]||{});
-      /* Purchase only after the server confirmed the payment and gave the code, never from a button click */
-      if(name==='code_claimed'){let d=false;try{d=localStorage.getItem('adreel_px_purchase')==='1';localStorage.setItem('adreel_px_purchase','1')}catch(e){}
-        if(!d)window.fbq('track','Purchase',{value:499,currency:'INR'})}
+      const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+      if(name==='lead_submit')window.fbq('track','Lead',{content_name:'Adreel Academy'},{eventID:'lead_'+uid()});
+      if(name==='begin_checkout')window.fbq('track','InitiateCheckout',{value:499,currency:'INR'},{eventID:'ic_'+uid()});
+      /* Purchase only after the server confirmed the payment and gave the code, never from a click. One per order id, event_id matches the server-side event */
+      if(name==='code_claimed'&&p.order_id){const k='adreel_px_purchase_'+p.order_id;let d=false;try{d=localStorage.getItem(k)==='1';localStorage.setItem(k,'1')}catch(e){}
+        if(!d)window.fbq('track','Purchase',{value:Number(p.value)||499,currency:'INR',content_type:'product',order_id:String(p.order_id),transaction_id:String(p.order_id)},{eventID:'purchase_'+p.order_id})}
     }
   }catch(e){}
 }
@@ -990,10 +1061,10 @@ if(offerLive()){tick();timer=setInterval(tick,1000)}
 function payAmount(){return offerLive()?O.price:SITE.price}
 
 /* checkout wiring */
-const hasCheckout=/^https?:\/\//i.test(SITE.checkoutUrl);
+const hasCheckout=SITE.customCheckout||/^https?:\/\//i.test(SITE.checkoutUrl);
 $$('[data-cta]').forEach(a=>{
   const skip=a.hasAttribute('data-nocheckout');
-  if(hasCheckout&&!skip){a.href=SITE.checkoutUrl;a.target='_blank';a.rel='noopener'}
+  if(hasCheckout&&!skip){a.href=SITE.customCheckout?'/checkout':SITE.checkoutUrl;if(!SITE.customCheckout){a.target='_blank';a.rel='noopener'}}
   a.addEventListener('click',()=>{
     track('cta_click',{label:a.dataset.cta});
     if(hasCheckout&&!skip)track('begin_checkout',{label:a.dataset.cta});
@@ -1057,6 +1128,9 @@ const LEGAL={
 <h2>Third-party tools</h2><p>AI tools are run by other companies and have their own terms, prices and commercial-use rules. You are responsible for checking them before using work commercially. They may change over time.</p>
 <h2>Refunds</h2><p>See the <a href="#refund">Refund policy</a>.</p>
 <h2>Contact</h2><p>${ph(SITE.contact.email||'[your@email.com]')}</p>`},
+  'payment-failed':{t:'Payment not completed',h:`<p class="lead">Your payment was not completed, so no money should be charged and no access code was issued.</p>
+<p>You can try again with the Enroll button. If money was deducted from your account, your bank normally returns it automatically. If it does not, email us the transaction ID and we will help.</p>
+<a class="btn primary lg" href="#home" data-nocheckout>Back to the course page</a>`},
   refund:{t:'Refund policy',h:`<p>Adreel Academy is a digital course. Once your personal access code is delivered, you get immediate access to the lessons, so we do not offer refunds for a change of mind, for lack of time, or because results differ from your expectations.</p>
 <h2>When we do refund</h2><ul><li>You were charged more than once for the same course.</li><li>Your payment was successful but we could not give you access to the course.</li></ul>
 <p>In the second case we first try to fix your access. If we cannot, we refund the full amount you paid.</p>
@@ -1164,45 +1238,93 @@ ${ok?`<p class="fine">Video not loading? <a href="https://www.youtube.com/watch?
     }else showLock();
   }},
   'thank-you':{t:'Thank You for Purchasing Adreel Academy!',h:`<div class="ty">
-<p class="lead">Thank you for your purchase. Your payment is checked before access is given. Once it is verified, we send you a personal access code. Click Access Your Course and enter the code to start learning.</p>
+<p class="lead">Thank you for your purchase. As soon as PayU confirms your payment, your personal access code appears here and is also sent to your email.</p>
 <div class="kv"><span>Course</span><b>Adreel Academy AI Ad Video Creation Course</b></div>
-<div class="kv"><span>Payment status</span><b><span class="pill" style="font:inherit">Payment verification pending</span></b></div>
+<form class="utr" id="autoForm" novalidate>
+<h2 style="margin:0">Get your access code</h2>
+<div class="field"><label for="auto-contact">Email or mobile number used on the payment page</label><input type="text" id="auto-contact" autocomplete="email" placeholder="you@example.com or 9876543210"></div>
+<button class="btn primary" type="submit" id="autoBtn">Get my access code</button>
+<p class="status" id="autoStatus" role="status" aria-live="polite"></p>
+<div id="autoCode" hidden>
+<div class="kv"><span>Your access code</span><b id="autoCodeVal" style="font-family:var(--mono,monospace);letter-spacing:.04em;user-select:all"></b></div>
+<button class="btn ghost sm" type="button" id="autoCopy">Copy code</button>
 <a class="btn primary lg" id="accessBtn" href="#course">Access Your Course</a>
-<p class="fine">The course opens only with the access code we send after your payment is verified.</p>
+<p class="fine">Save this code. We also emailed it to you.</p>
+</div></form>
+<details id="manualBox"><summary class="fine" style="cursor:pointer">Code not showing? Send your payment details instead</summary>
 <form class="utr" id="utrForm" novalidate>
 <h2 style="margin:0">Send your payment details to get your code</h2>
 <div class="field"><label for="utr-name">Your name</label><input type="text" id="utr-name" autocomplete="name" placeholder="Name used for the payment"></div>
 <div class="field"><label for="utr-id">Transaction ID</label><input type="text" id="utr-id" inputmode="text" autocomplete="off" placeholder="Transaction ID from your payment receipt"></div>
+<div class="field"><label for="utr-contact">Email or WhatsApp number</label><input type="text" id="utr-contact" autocomplete="email" placeholder="Where should we send your access code?"></div>
 <button class="btn primary" type="submit">Send payment details</button>
 <p class="fine">Payments are checked manually. You get your access code after verification.</p>
 <p class="status" id="utrStatus" role="status" aria-live="polite"></p>
-</form></div>`,
+</form></details></div>`,
   init(ov){
     track('payment_claimed');
+    const af=$('#autoForm',ov),box=$('#manualBox',ov);
+    const qs=new URLSearchParams(location.search),qo=qs.get('o'),qk=qs.get('k');
+    if(!SITE.autoAccess){af.hidden=true;box.open=true;box.querySelector('summary').hidden=true}
+    else{
+      const as=$('#autoStatus',ov),ab=$('#autoBtn',ov);
+      const asay=(m,c)=>{as.className='status '+c;as.textContent=m};
+      let tries=0;
+      const ask=async()=>{
+        const c=$('#auto-contact',ov).value.trim();
+        const em=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c);
+        if(!em&&c.replace(/\D/g,'').length<10){asay('Enter the email or mobile number you used on the payment page.','err');return}
+        ab.disabled=true;asay('Checking your payment...','warn');
+        try{
+          const r=await fetch('/api/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(em?{email:c}:{phone:c})});
+          const d=await r.json().catch(()=>({}));
+          if(r.ok&&d.code){
+            $('#autoCodeVal',ov).textContent=d.code;$('#autoCode',ov).hidden=false;
+            try{localStorage.setItem('adreel_course_code',d.code)}catch(e){}
+            asay('Payment confirmed. Your access code is ready.','ok');track('code_claimed',{order_id:d.order_id,value:d.value});ab.hidden=true;return;
+          }
+          if(r.ok){asay(d.message||'Payment confirmed. Your code will be emailed to you shortly.','ok');ab.disabled=false;return}
+          if(r.status===404&&tries<6){tries++;asay('Payment not confirmed yet. Checking again in a few seconds...','warn');setTimeout(ask,5000);return}
+          asay(d.error||'Could not check right now. Try again.','err');ab.disabled=false;
+        }catch(err){asay('Could not check right now. Check your connection and try again.','err');ab.disabled=false}
+      };
+      const show=d=>{$('#autoCodeVal',ov).textContent=d.code;$('#autoCode',ov).hidden=false;try{localStorage.setItem('adreel_course_code',d.code)}catch(e){}asay('Payment confirmed. Your access code is ready.','ok');track('code_claimed',{order_id:d.order_id,value:d.value});ab.hidden=true;$('#auto-contact',ov).closest('.field').hidden=true};
+      if(qo&&qk){
+        /* came back from PayU: the server already verified the payment and signed this order */
+        asay('Payment received. Getting your access code...','warn');
+        fetch('/api/claim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({txnid:qo,token:qk})}).then(r=>r.json().catch(()=>({}))).then(d=>{
+          if(d&&d.code){show(d);try{history.replaceState(null,'',location.pathname+'#thank-you')}catch(e){}}
+          else asay((d&&d.message)||'Payment confirmed. Enter your email or mobile below to get your code.','warn')
+        }).catch(()=>asay('Could not fetch your code right now. Enter your email or mobile below.','warn'));
+      }
+      af.addEventListener('submit',e=>{e.preventDefault();tries=0;ask()});
+      $('#autoCopy',ov).addEventListener('click',()=>{const v=$('#autoCodeVal',ov).textContent;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>asay('Code copied.','ok'),()=>asay('Select the code and copy it.','warn'))});
+    }
     const f=$('#utrForm',ov),st=$('#utrStatus',ov);
     const say=(m,c)=>{st.className='status '+c;st.textContent=m};
     f.addEventListener('submit',async e=>{
       e.preventDefault();
-      const name=$('#utr-name',ov).value.trim(),utr=$('#utr-id',ov).value.trim();
+      const name=$('#utr-name',ov).value.trim(),utr=$('#utr-id',ov).value.trim(),contact=$('#utr-contact',ov).value.trim();
       if(!name){say('Enter your name.','err');return}
       if(!/^[A-Za-z0-9]{10,22}$/.test(utr)){say('Enter the transaction ID / UTR exactly as shown on your payment receipt.','err');return}
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact)&&contact.replace(/\D/g,'').length<10){say('Enter the email or WhatsApp number where we should send your access code.','err');return}
       const to=(SITE.contact&&SITE.contact.email)||'';
       if(sbReady()){
         try{
-          await sbInsert('payment_claims',{name:name,transaction_id:utr,amount:payAmount(),status:'pending'});
+          await sbInsert('payment_claims',{name:name,transaction_id:utr,contact:contact,amount:payAmount(),status:'pending'});
           track('utr_submit');f.reset();say('Received. We will verify your payment and send your access code.','ok');
         }catch(err){say('Could not send. Check your connection and try again, or email your name and transaction ID to '+to+'.','err')}
         return;
       }
       if(!SITE.paymentEndpoint){
-        const body='Name: '+name+'\nTransaction ID: '+utr+'\nAmount: '+payAmount()+'\nCourse: Adreel Academy AI Ad Video Creation Course';
+        const body='Name: '+name+'\nContact: '+contact+'\nTransaction ID: '+utr+'\nAmount: '+payAmount()+'\nCourse: Adreel Academy AI Ad Video Creation Course';
         say('Your email app should open with your details. If it does not, email your name and UTR to '+to+'.','warn');
         track('utr_email');
         location.href='mailto:'+to+'?subject='+encodeURIComponent('Payment details: Adreel Academy')+'&body='+encodeURIComponent(body);
         return;
       }
       try{
-        const r=await fetch(SITE.paymentEndpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:name,utr:utr,amount:payAmount(),source:location.href})});
+        const r=await fetch(SITE.paymentEndpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:name,utr:utr,contact:contact,amount:payAmount(),source:location.href})});
         if(!r.ok)throw new Error('bad status');
         track('utr_submit');f.reset();say('Received. We will verify your payment and confirm your access.','ok');
       }catch(err){say('Could not send. Check your connection and try again.','err')}
