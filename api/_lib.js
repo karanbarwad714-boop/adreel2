@@ -87,7 +87,7 @@ async function sendMetaPurchase({ txnid, email, phone, firstname, amount }) {
   const body = { data: [{
     event_name: 'Purchase', event_time: Math.floor(Date.now() / 1000), event_id: 'purchase_' + txnid,
     action_source: 'website', event_source_url: env('SITE_URL', 'https://adreel2.vercel.app') + '/#thank-you',
-    user_data: user, custom_data: { currency: 'INR', value: Number(amount), order_id: String(txnid), content_name: 'Adreel Academy' },
+    user_data: user, custom_data: { currency: 'INR', value: Number(amount), content_type: 'product', order_id: String(txnid), transaction_id: String(txnid), content_name: 'Adreel Academy' },
   }] };
   if (env('META_TEST_EVENT_CODE')) body.test_event_code = env('META_TEST_EVENT_CODE');
   const res = await fetch('https://graph.facebook.com/v21.0/' + pixel + '/events?access_token=' + encodeURIComponent(token), {
