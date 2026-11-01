@@ -4,6 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1138749415261380');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1138749415261380&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 <title>Adreel Academy</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Learn a practical workflow to turn product images into professional-looking AI ad videos for your own brand or for freelance clients.">
@@ -699,6 +716,13 @@ function track(name,params){
     window.dataLayer.push(Object.assign({event:name},p));
     if(typeof window.gtag==='function')window.gtag('event',name,p);
     if(typeof window.fbq==='function')window.fbq('trackCustom',name,p);
+    if(typeof window.fbq==='function'){
+      const std={lead_submit:['Lead'],begin_checkout:['InitiateCheckout',{value:499,currency:'INR'}]}[name];
+      if(std)window.fbq('track',std[0],std[1]||{});
+      /* Purchase only after the server confirmed the payment and gave the code, never from a button click */
+      if(name==='code_claimed'){let d=false;try{d=localStorage.getItem('adreel_px_purchase')==='1';localStorage.setItem('adreel_px_purchase','1')}catch(e){}
+        if(!d)window.fbq('track','Purchase',{value:499,currency:'INR'})}
+    }
   }catch(e){}
 }
 /* Supabase: insert-only calls from the browser */
