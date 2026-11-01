@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
     if (!okEmail && phone.length < 10) return res.status(400).json({ ok: false, error: 'Enter the email or mobile number you used on the PayU page.' });
 
     const filter = okEmail ? 'email=eq.' + encodeURIComponent(email) : 'phone=like.' + encodeURIComponent('*' + phone);
-    const rows = await sb('orders?' + filter + '&order=id.desc&limit=1&select=txnid,access_code,firstname,email,emailed_at');
+    const rows = await sb('orders?' + filter + '&order=id.desc&limit=1&select=txnid,access_code,firstname,email,emailed_at,amount');
     if (!rows || !rows.length) return res.status(404).json({ ok: false, pending: true, error: 'Payment not confirmed yet. It can take a minute - try again shortly.' });
 
     let o = rows[0];
@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
         if (r.sent) await sb('orders?txnid=eq.' + encodeURIComponent(o.txnid), { method: 'PATCH', body: JSON.stringify({ emailed_at: new Date().toISOString() }) });
       } catch (e) { console.error('claim email failed', e.message); }
     }
-    return res.status(200).json({ ok: true, code: o.access_code, name: o.firstname || '' });
+    return res.status(200).json({ ok: true, code: o.access_code, name: o.firstname || '', order_id: o.txnid, value: Number(o.amount) });
   } catch (e) {
     console.error('claim error', e.message);
     return res.status(500).json({ ok: false, error: 'Something went wrong. Please try again.' });

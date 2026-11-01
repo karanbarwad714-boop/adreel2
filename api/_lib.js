@@ -72,4 +72,29 @@ async function sendCodeEmail({ to, name, code }) {
   return { sent: true };
 }
 
-module.exports = { env, needEnv, sb, payuHashOk, parseBody, sendCodeEmail };
+const sha = v => crypto.createHash('sha256').update(String(v || '').trim().toLowerCase()).digest('hex');
+
+// Meta Conversions API (server-side). Needs META_PIXEL_ID + META_CAPI_TOKEN in Vercel env. event_id matches the browser Pixel, so Meta counts one purchase.
+async function sendMetaPurchase({ txnid, email, phone, firstname, amount }) {
+  const pixel = env('META_PIXEL_ID'), token = env('META_CAPI_TOKEN');
+  if (!pixel || !token) return { skipped: true };
+  const digits = String(phone || '').replace(/\D/g, '').slice(-10);
+  const user = {};
+  if (email) user.em = [sha(email)];
+  if (digits.length === 10) user.ph = [sha('91' + digits)];
+  if (firstname) user.fn = [sha(String(firstname).split(' ')[0])];
+  user.country = [sha('in')];
+  const body = { data: [{
+    event_name: 'Purchase', event_time: Math.floor(Date.now() / 1000), event_id: 'purchase_' + txnid,
+    action_source: 'website', event_source_url: env('SITE_URL', 'https://adreel2.vercel.app') + '/#thank-you',
+    user_data: user, custom_data: { currency: 'INR', value: Number(amount), order_id: String(txnid), content_name: 'Adreel Academy' },
+  }] };
+  if (env('META_TEST_EVENT_CODE')) body.test_event_code = env('META_TEST_EVENT_CODE');
+  const res = await fetch('https://graph.facebook.com/v21.0/' + pixel + '/events?access_token=' + encodeURIComponent(token), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error('Meta CAPI ' + res.status + ': ' + (await res.text()).slice(0, 300));
+  return { sent: true };
+}
+
+module.exports = { env, needEnv, sb, payuHashOk, parseBody, sendCodeEmail, sendMetaPurchase };

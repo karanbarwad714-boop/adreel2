@@ -1,5 +1,5 @@
 // PayU server-to-server notification. Gives the buyer an access code ONLY after PayU's own hash is verified.
-const { env, needEnv, sb, payuHashOk, parseBody, sendCodeEmail } = require('./_lib');
+const { env, needEnv, sb, payuHashOk, parseBody, sendCodeEmail, sendMetaPurchase } = require('./_lib');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'POST only' });
@@ -42,6 +42,8 @@ module.exports = async (req, res) => {
         }
       }
     }
+    try { await sendMetaPurchase({ txnid: String(p.txnid), email: p.email, phone: p.phone, firstname: p.firstname, amount }); }
+    catch (e) { console.error('meta capi failed', e.message); }
     return res.status(200).json({ ok: true, assigned: !!code });
   } catch (e) {
     console.error('payu-webhook error', e.message);
