@@ -13,7 +13,8 @@ async function sb(path, opts = {}) {
   const key = env('SUPABASE_SERVICE_ROLE_KEY');
   const res = await fetch(url, {
     ...opts,
-    headers: { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json', ...(opts.headers || {}) },
+    // New Supabase secret keys (sb_secret_...) are not JWTs: send them only as `apikey`. Old service_role JWT keys also use Authorization.
+    headers: { apikey: key, ...(key.startsWith('sb_') ? {} : { Authorization: 'Bearer ' + key }), 'Content-Type': 'application/json', ...(opts.headers || {}) },
   });
   const text = await res.text();
   let data = null;
