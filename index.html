@@ -695,7 +695,7 @@ const SITE={
   originalPrice:'₹999',
   offer:{price:'',endsAt:''},  // launch offer: this price until endsAt (fixed deadline, same for every visitor), then the regular price above                       // e.g. '₹9,999'. Only fill in if it is a genuine reference price
   checkoutUrl:'https://u.payu.in/PAYUMN/GrALUHeWiDlC',   // PayU payment link. Every Enroll / Get Access button opens it
-  customCheckout:false,                   // true = Enroll buttons open /checkout (PayU checkout with server-made hash, order ID passed back automatically). false = use the PayU Payment Link in checkoutUrl.
+  customCheckout:true,                    // true = Enroll buttons open /checkout (PayU checkout with server-made hash, order ID passed back automatically). false = use the PayU Payment Link in checkoutUrl.
   autoAccess:true,                        // true = Thank You page shows the access code automatically after PayU confirms payment (needs /api functions + env vars, see DEPLOY.md)
   paymentEndpoint:'',                     // optional: form handler URL (JSON POST) that receives the UTR a customer submits. Empty = UTR is sent by email
   // DATABASE: Supabase stores the free-guide leads and the payment details customers send. The key below is a public (publishable) key.
