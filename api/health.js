@@ -15,6 +15,10 @@ module.exports = async (req, res) => {
     const t = async (name, fn) => { try { out.database[name] = await fn(); } catch (e) { out.database[name] = 'ERROR: ' + String(e.message).slice(0, 140); } };
     await t('orders_table', async () => { await sb('orders?select=id&limit=1'); return 'ok'; });
     await t('access_codes_table', async () => { await sb('access_codes?select=id&limit=1'); return 'ok'; });
+    await t('payment_logs_table', async () => { await sb('payment_logs?select=id&limit=1'); return 'ok'; });
+    // Counts only. Shows whether saved orders were paid with the CURRENT PayU key (real) or an older / test key.
+    await t('orders_total', async () => (await sb('orders?select=id&limit=1000')).length);
+    await t('orders_with_current_key', async () => (await sb('orders?select=id&raw->>key=eq.' + encodeURIComponent(env('PAYU_KEY')) + '&limit=1000')).length);
     await t('free_codes', async () => { const r = await sb('access_codes?select=id&assigned_to=is.null&limit=1000'); return r.length; });
     // Calls the function with a NULL order id on purpose: it fails safely (nothing is saved) but proves it exists and that this key may run it.
     await t('assign_function', async () => {

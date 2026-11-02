@@ -38,6 +38,21 @@ function payuHashOk(p, salt, key) {
   });
 }
 
+// PayU TEST payments are never real sales: they must not reach Meta as a Purchase.
+const isTestMode = () => env('PAYU_BASE_URL').includes('test.payu.in');
+
+// Writes one row to payment_logs (failed / pending / cancelled payments, hash mismatches, errors). Never throws: logging must not break a payment.
+async function logPayment(event, p, message) {
+  try {
+    p = p || {};
+    await sb('payment_logs', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({
+      event: String(event).slice(0, 40), txnid: p.txnid ? String(p.txnid) : null, status: p.status ? String(p.status).slice(0, 40) : null,
+      amount: p.amount != null && p.amount !== '' && !isNaN(Number(p.amount)) ? Number(p.amount) : null,
+      message: String(message || p.error_Message || p.field9 || '').slice(0, 500), test_mode: isTestMode(),
+    }) });
+  } catch (e) { console.error('payment_logs write failed', e.message); }
+}
+
 function parseBody(req) {
   const b = req.body;
   if (b && typeof b === 'object' && !Buffer.isBuffer(b)) return b;
@@ -117,12 +132,18 @@ async function fulfil(p) {
         if (r.sent) await sb('orders?txnid=eq.' + encodeURIComponent(p.txnid), { method: 'PATCH', body: JSON.stringify({ emailed_at: new Date().toISOString(), email_error: null }) });
       } catch (e) {
         console.error('email failed', e.message);
+        await logPayment('email_error', p, e.message);
         await sb('orders?txnid=eq.' + encodeURIComponent(p.txnid), { method: 'PATCH', body: JSON.stringify({ email_error: e.message.slice(0, 300) }) });
       }
     }
   }
-  try { await sendMetaPurchase({ txnid: String(p.txnid), email: p.email, phone: p.phone, firstname: p.firstname, amount }); }
-  catch (e) { console.error('meta capi failed', e.message); }
+  if (isTestMode()) {
+    await logPayment('test_payment', p, 'PayU TEST mode: Meta Purchase NOT sent');
+  } else {
+    try { await sendMetaPurchase({ txnid: String(p.txnid), email: p.email, phone: p.phone, firstname: p.firstname, amount }); }
+    catch (e) { console.error('meta capi failed', e.message); await logPayment('meta_capi_error', p, e.message); }
+  }
+  if (!code) await logPayment('no_code_left', p, 'Order saved but no free access code');
   return code;
 }
 
@@ -135,4 +156,4 @@ function payuRequestHash(f, key, salt) {
   return crypto.createHash('sha512').update(s).digest('hex');
 }
 
-module.exports = { env, needEnv, sb, payuHashOk, parseBody, sendCodeEmail, sendMetaPurchase, fulfil, orderToken, payuRequestHash };
+module.exports = { isTestMode, logPayment, env, needEnv, sb, payuHashOk, parseBody, sendCodeEmail, sendMetaPurchase, fulfil, orderToken, payuRequestHash };

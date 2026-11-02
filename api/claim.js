@@ -1,5 +1,5 @@
 // Thank You page asks: "I paid with this email / phone - what is my code?" Answers only for a payment PayU confirmed.
-const { env, needEnv, sb, parseBody, sendCodeEmail, orderToken } = require('./_lib');
+const { env, needEnv, sb, parseBody, sendCodeEmail, orderToken, isTestMode, logPayment } = require('./_lib');
 const crypto = require('crypto');
 
 module.exports = async (req, res) => {
@@ -31,9 +31,10 @@ module.exports = async (req, res) => {
         if (r.sent) await sb('orders?txnid=eq.' + encodeURIComponent(o.txnid), { method: 'PATCH', body: JSON.stringify({ emailed_at: new Date().toISOString() }) });
       } catch (e) { console.error('claim email failed', e.message); }
     }
-    return res.status(200).json({ ok: true, code: o.access_code, name: o.firstname || '', order_id: o.txnid, value: Number(o.amount) });
+    return res.status(200).json({ ok: true, code: o.access_code, name: o.firstname || '', order_id: o.txnid, value: Number(o.amount), test: isTestMode() });
   } catch (e) {
     console.error('claim error', e.message);
+    await logPayment('claim_error', {}, e.message);
     return res.status(500).json({ ok: false, error: 'Something went wrong. Please try again.' });
   }
 };
