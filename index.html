@@ -792,7 +792,7 @@ function track(name,params){
       if(name==='begin_checkout')window.fbq('track','InitiateCheckout',{value:499,currency:'INR'},{eventID:'ic_'+uid()});
       /* Purchase only after the server confirmed the payment and gave the code, never from a click. One per order id, event_id matches the server-side event */
       if(name==='code_claimed'&&p.order_id){const k='adreel_px_purchase_'+p.order_id;let d=false;try{d=localStorage.getItem(k)==='1';localStorage.setItem(k,'1')}catch(e){}
-        if(!d&&!p.test&&Number(p.value)>0)window.fbq('track','Purchase',{value:Number(p.value),currency:'INR',content_type:'product',order_id:String(p.order_id),transaction_id:String(p.order_id)},{eventID:'purchase_'+p.order_id})}
+        if(!d&&p.fresh&&!p.test&&Number(p.value)>0)window.fbq('track','Purchase',{value:Number(p.value),currency:'INR',content_type:'product',order_id:String(p.order_id),transaction_id:String(p.order_id)},{eventID:'purchase_'+p.order_id})}
     }
   }catch(e){}
 }
@@ -1281,14 +1281,14 @@ ${ok?`<p class="fine">Video not loading? <a href="https://www.youtube.com/watch?
           if(r.ok&&d.code){
             $('#autoCodeVal',ov).textContent=d.code;$('#autoCode',ov).hidden=false;
             try{localStorage.setItem('adreel_course_code',d.code)}catch(e){}
-            asay('Payment confirmed. Your access code is ready.','ok');track('code_claimed',{order_id:d.order_id,value:d.value,test:!!d.test});ab.hidden=true;return;
+            asay('Payment confirmed. Your access code is ready.','ok');track('code_claimed',{order_id:d.order_id,value:d.value,test:!!d.test,fresh:!!d.fresh});ab.hidden=true;return;
           }
           if(r.ok){asay(d.message||'Payment confirmed. Your code will be emailed to you shortly.','ok');ab.disabled=false;return}
           if(r.status===404&&tries<6){tries++;asay('Payment not confirmed yet. Checking again in a few seconds...','warn');setTimeout(ask,5000);return}
           asay(d.error||'Could not check right now. Try again.','err');ab.disabled=false;
         }catch(err){asay('Could not check right now. Check your connection and try again.','err');ab.disabled=false}
       };
-      const show=d=>{$('#autoCodeVal',ov).textContent=d.code;$('#autoCode',ov).hidden=false;try{localStorage.setItem('adreel_course_code',d.code)}catch(e){}asay('Payment confirmed. Your access code is ready.','ok');track('code_claimed',{order_id:d.order_id,value:d.value,test:!!d.test});ab.hidden=true;$('#auto-contact',ov).closest('.field').hidden=true};
+      const show=d=>{$('#autoCodeVal',ov).textContent=d.code;$('#autoCode',ov).hidden=false;try{localStorage.setItem('adreel_course_code',d.code)}catch(e){}asay('Payment confirmed. Your access code is ready.','ok');track('code_claimed',{order_id:d.order_id,value:d.value,test:!!d.test,fresh:!!d.fresh});ab.hidden=true;$('#auto-contact',ov).closest('.field').hidden=true};
       if(qo&&qk){
         /* came back from PayU: the server already verified the payment and signed this order */
         asay('Payment received. Getting your access code...','warn');
