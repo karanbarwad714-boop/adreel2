@@ -1115,14 +1115,14 @@ if('IntersectionObserver' in window){
 /* legal pages on #privacy, #terms, #refund */
 const B=esc(SITE.brand);
 const LEGAL={
-  privacy:{t:'Privacy policy',h:`<p class="fine">${ph('[Template. Review it with a legal professional and replace every bracketed item before launch.]')}</p>
-<h2>What we collect</h2><p>If you join the starter guide list, we collect your first name and email address. If you buy the course, the payment provider collects your payment details and shares the order information we need to give you access. We also use analytics to see how the site is used, such as which buttons are clicked and which videos are played.</p>
+  privacy:{t:'Privacy policy',h:`<p class="fine">Last updated: November 2026.</p>
+<h2>What we collect</h2><p>If you join the starter guide list, we collect your first name and email address. If you buy the course, we collect your name, email address and phone number, and PayU collects your payment details; we never see or store your card or UPI details. PayU shares the order information we need to give you access. We also use analytics to see how the site is used, such as which buttons are clicked and which videos are played.</p>
 <h2>How we use it</h2><ul><li>To send the starter guide and related emails you agreed to receive.</li><li>To deliver the course and support you after purchase.</li><li>To understand and improve the site.</li></ul>
-<h2>Who we share it with</h2><p>${ph('We use these providers to run the site: [payment provider], [email platform], [analytics provider].')} We do not sell your personal information.</p>
+<h2>Who we share it with</h2><p>We use these providers to run the site and the course: PayU (payment processing), Supabase (database that stores your order and access code), Vercel (website hosting) and Meta (advertising measurement through the Meta Pixel and Conversions API, which receive your page visits, checkout and purchase events and, in hashed form, your email, phone and name). We may use an email service to send your access code and updates. We do not sell your personal information.</p>
 <h2>Your choices</h2><p>You can unsubscribe from emails at any time using the link in every email. You can ask us to access or delete your data by contacting us.</p>
 <h2>Contact</h2><p>${ph(SITE.contact.email||'[your@email.com]')}</p>`},
-  terms:{t:'Terms and conditions',h:`<p class="fine">${ph('[Template. Review it with a legal professional and replace every bracketed item before launch.]')}</p>
-<h2>Purchase and access</h2><p>By enrolling in the course from ${B} you agree to these terms. Access is for the person who paid. ${ph('[Describe the access period and how access is delivered.]')}</p>
+  terms:{t:'Terms and conditions',h:`<p class="fine">Last updated: November 2026.</p>
+<h2>Purchase and access</h2><p>By enrolling in the course from ${B} you agree to these terms. Access is for the person who paid. You get lifetime access to the course. After your payment is confirmed, a personal access code is shown on the Thank You page right away (and may also be sent to your email). Enter it on the course access page to watch the lessons on your phone or laptop. Keep your code private; sharing it may lead to it being disabled.</p>
 <h2>Licence</h2><p>Course materials are for your personal learning and for work you create with them. You may not copy, resell, share or publish the lessons or files.</p>
 <h2>No guarantees</h2><p>The course teaches skills and a workflow. Results depend on your product, the AI tools you use, your effort and your editing quality. We do not guarantee income, clients, sales or ad performance.</p>
 <h2>Third-party tools</h2><p>AI tools are run by other companies and have their own terms, prices and commercial-use rules. You are responsible for checking them before using work commercially. They may change over time.</p>
