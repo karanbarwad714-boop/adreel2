@@ -146,6 +146,8 @@ ul,ol{margin:0;padding:0;list-style:none}
 .btn.primary:hover{transform:translateY(-1px);box-shadow:0 14px 34px -10px rgba(90,75,238,.95)}
 .btn.ghost{background:transparent;border-color:var(--line);color:var(--fg)}
 .btn.ghost:hover{background:var(--surface-hi)}
+.btn.wa{background:#25D366;color:#062611;min-height:46px;padding:0 1.25rem;font-size:.98rem;margin-top:6px}
+.btn.wa:hover{filter:brightness(1.06)}
 .btn.dark{background:var(--light-ink);color:#fff}
 .btn.dark:hover{transform:translateY(-1px)}
 .btn[disabled]{opacity:.6;cursor:wait}
@@ -438,6 +440,7 @@ footer.foot{border-top:1px solid var(--line-soft);padding-block:48px 56px;color:
     <div class="hero-copy">
       <p class="eyebrow">AI ad video course for brands and freelancers</p>
       <h1>Create Scroll-Stopping AI Ad Videos for Brands — Without Expensive Shoots.</h1>
+      <p style="margin:0"><a class="btn wa" id="waBtn" href="https://wa.me/918306949278" target="_blank" rel="noopener"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.23 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.16-.48-.29z"/></svg>WhatsApp par baat karo</a></p>
       <p class="lead">Learn a practical workflow to turn ordinary product images into professional-looking advertising videos using AI tools. Build ad creatives for your own business or learn a skill you can offer to freelance clients.</p>
       <div class="cta-row" id="heroCtas">
         <a class="btn primary lg" data-cta="hero-primary" href="#pricing">Get Instant Course Access</a>
@@ -708,7 +711,7 @@ const SITE={
   leadSuccess:'Thanks. You are on the list.',
   ga4Id:'',                               // Google Analytics 4 id, e.g. 'G-XXXXXXXXXX'
   embedYouTube:false,                     // true plays YouTube inside the page (works once the page is on your own site)
-  contact:{email:'karanbarwad169@gmail.com',phone:'',whatsapp:''},
+  contact:{email:'karanbarwad169@gmail.com',phone:'',whatsapp:'+918306949278'},
 
   // Tick only what is really included. Each true item appears in the pricing card.
   included:{projectFiles:false,lifetimeAccess:false,updates:false,community:false,selfPaced:false},
@@ -791,6 +794,7 @@ function track(name,params){
     if(typeof window.fbq==='function')window.fbq('trackCustom',name,p);
     if(typeof window.fbq==='function'){
       const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+      if(name==='whatsapp_click')window.fbq('track','Contact',{content_name:'WhatsApp'});
       if(name==='lead_submit')window.fbq('track','Lead',{content_name:'Adreel Academy'},{eventID:'lead_'+uid()});
       if(name==='begin_checkout')window.fbq('track','InitiateCheckout',{value:499,currency:'INR'},{eventID:'ic_'+uid()});
       /* Purchase only after the server confirmed the payment and gave the code, never from a click. One per order id, event_id matches the server-side event */
@@ -1074,6 +1078,12 @@ $$('[data-cta]').forEach(a=>{
     if(hasCheckout&&!skip)track('begin_checkout',{label:a.dataset.cta});
   });
 });
+
+/* whatsapp button: opens a chat with a ready message; a real click is tracked as Contact */
+(function(){const a=$('#waBtn');if(!a)return;const n=String((SITE.contact&&SITE.contact.whatsapp)||'').replace(/\D/g,'');if(!n){a.hidden=true;return}
+  a.href='https://wa.me/'+n+'?text='+encodeURIComponent('Hi, mujhe Adreel Academy AI Ad Video course ke baare me jaankari chahiye.');
+  a.addEventListener('click',()=>track('whatsapp_click',{label:'hero'}))})();
+
 
 /* faq */
 $('#faqList').innerHTML=SITE.faq.map(f=>`<details><summary><span>${esc(f.q)}</span><span class="pl" aria-hidden="true"></span></summary><div class="ans"><p>${ph(f.a)}</p>${f.more?`<p><a href="${esc(f.more.href)}">${esc(f.more.label)}</a></p>`:''}</div></details>`).join('');
