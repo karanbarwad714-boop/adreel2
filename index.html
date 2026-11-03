@@ -443,6 +443,7 @@ footer.foot{border-top:1px solid var(--line-soft);padding-block:48px 56px;color:
         <a class="btn primary lg" data-cta="hero-primary" href="#pricing">Get Instant Course Access</a>
         <a class="btn ghost lg" data-cta="hero-demo" data-nocheckout href="#demo"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Watch Free Demo</a>
       </div>
+      <p class="hi-line" style="margin:14px 0 0;font-weight:600;line-height:1.5">Mobile se AI ad video banana seekho: <span style="color:var(--accent-text)"><span id="heroPrice">₹499</span> · Lifetime access · Recorded lessons</span></p>
       <p class="fine">Results depend on your product, the AI tools, your workflow and your editing quality.</p>
     </div>
     <div class="hero-visual">
@@ -454,6 +455,26 @@ footer.foot{border-top:1px solid var(--line-soft);padding-block:48px 56px;color:
       <li><span id="vp2"></span>Create product-focused advertising creatives.</li>
       <li><span id="vp3"></span>Learn how to package your skills for freelance services.</li>
     </ul>
+  </div>
+</section>
+
+<!-- 13. LEAD -->
+<section class="sec" style="padding-block:8px 0" id="guide">
+  <div class="wrap">
+    <div class="lead-band">
+      <div class="txt">
+        <p class="eyebrow">Not ready to enroll?</p>
+        <h2>Get a Free AI Ad Creation Starter Guide.</h2>
+        <p class="lead" style="font-size:1rem">Leave your first name and email and we will send you the guide. No pop-ups and no obligation.</p>
+      </div>
+      <form class="lf" id="leadForm" novalidate>
+        <div class="field"><label for="lead-name">First name</label><input type="text" id="lead-name" autocomplete="given-name" placeholder="Your first name"></div>
+        <div class="field"><label for="lead-email">Email address</label><input type="email" id="lead-email" autocomplete="email" placeholder="you@example.com"></div>
+        <label class="consent"><input type="checkbox" id="lead-consent"><span>I agree to receive the starter guide and occasional emails from <span data-bind="brand"></span>. I can unsubscribe at any time. See the <a href="#privacy">Privacy policy</a>.</span></label>
+        <button class="btn primary" type="submit" id="leadBtn">Send me the guide</button>
+        <p class="status" id="leadStatus" role="status" aria-live="polite"></p>
+      </form>
+    </div>
   </div>
 </section>
 
@@ -619,25 +640,7 @@ footer.foot{border-top:1px solid var(--line-soft);padding-block:48px 56px;color:
   </div>
 </section>
 
-<!-- 13. LEAD -->
-<section class="sec" style="padding-top:0" id="guide">
-  <div class="wrap">
-    <div class="lead-band">
-      <div class="txt">
-        <p class="eyebrow">Not ready to enroll?</p>
-        <h2>Get a Free AI Ad Creation Starter Guide.</h2>
-        <p class="lead" style="font-size:1rem">Leave your first name and email and we will send you the guide. No pop-ups and no obligation.</p>
-      </div>
-      <form class="lf" id="leadForm" novalidate>
-        <div class="field"><label for="lead-name">First name</label><input type="text" id="lead-name" autocomplete="given-name" placeholder="Your first name"></div>
-        <div class="field"><label for="lead-email">Email address</label><input type="email" id="lead-email" autocomplete="email" placeholder="you@example.com"></div>
-        <label class="consent"><input type="checkbox" id="lead-consent"><span>I agree to receive the starter guide and occasional emails from <span data-bind="brand"></span>. I can unsubscribe at any time. See the <a href="#privacy">Privacy policy</a>.</span></label>
-        <button class="btn primary" type="submit" id="leadBtn">Send me the guide</button>
-        <p class="status" id="leadStatus" role="status" aria-live="polite"></p>
-      </form>
-    </div>
-  </div>
-</section>
+
 
 </main>
 
@@ -1033,6 +1036,7 @@ const offerLive=()=>!!(O.price&&endMs&&Date.now()<endMs);
 let timer=null;
 function renderPrice(){
   const w=$('#priceWas'),ob=$('#offerBox');
+  const hp=$('#heroPrice');if(hp)hp.textContent=offerLive()?O.price:SITE.price;
   if(offerLive()){
     $('#priceNow').innerHTML=ph(O.price);
     w.hidden=false;w.textContent=SITE.price;
